@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Manufacturers — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+  <span class="current"><i class="fa-solid fa-industry" style="margin-right:6px"></i>Manufacturers</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Manufacturers</h1>
+    <p class="page-subtitle">{{ pagination["total"] }} manufacturer{{ 's' if pagination["total"] != 1 }}</p>
+  </div>
+  {% if can_write %}
+  <a href="/manufacturers/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Manufacturer</a>
+  {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+  <div class="search-wrapper">
+    <i class="fa-solid fa-search search-icon"></i>
+    <input type="text" class="search-input" placeholder="Search manufacturer" name="search" value="{{ search or '' }}"
+      hx-get="/manufacturers" hx-trigger="keyup changed delay:300ms" hx-target="#manufacturer-table-body">
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a href="/manufacturers"
+      class="btn btn-sm {% if status_filter is none %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+    <a href="/manufacturers?is_active=true"
+      class="btn btn-sm {% if status_filter == true %}btn-success{% else %}btn-secondary{% endif %}">Active</a>
+    <a href="/manufacturers?is_active=false"
+      class="btn btn-sm {% if status_filter == false %}btn-secondary{% else %}btn-secondary{% endif %}"
+      style="{% if status_filter == false %}background:var(--danger-bg);color:var(--danger);{% endif %}">Inactive</a>
+  </div>
+
+  <input type="hidden" name="status_filter" value="{{ status_filter if status_filter is not none else '' }}">
+</div>
+
+{% if manufacturers %}
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="manufacturer-table-body">
+      {% include "manufacturers/manufacturer_rows.html" %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <i class="fa-solid fa-industry"></i>
+    <h3>No manufacturers yet</h3>
+    <p>Add your first manufacturer to get started.</p>
+    {% if can_write %}
+    <a href="/manufacturers/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-plus"></i> Add
+      Manufacturer</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

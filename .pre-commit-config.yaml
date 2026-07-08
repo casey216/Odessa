@@ -1,0 +1,37 @@
+exclude: |
+  (?x)^(
+    .venv/|
+    venv/|
+    __pycache__/|
+    .mypy_cache/|
+    .pytest_cache/|
+    build/|
+    dist/|
+    alembic/|
+    migrations/|
+    .*\.min\.js|
+    .*\.min\.css
+  )
+
+repos:
+  # ---------------------------
+  # Ruff (lint + auto-fix)
+  # ---------------------------
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # ---------------------------
+  # Basic hygiene hooks
+  # ---------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: debug-statements

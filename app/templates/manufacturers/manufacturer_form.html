@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if manufacturer else 'New' }} Manufacturer — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+  <a href="/manufacturers">Manufacturers</a>
+  <span class="sep">/</span>
+  <span class="current">{{ 'Edit ' + manufacturer.name if manufacturer else 'New Manufacturer' }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ 'Edit Manufacturer' if manufacturer else 'Add New Manufacturer' }}</h1>
+    <p class="page-subtitle">{{ 'Update manufacturer information' if manufacturer else 'Register a new manufacturer' }}
+    </p>
+  </div>
+</div>
+
+<div class="card" style="max-width:520px;">
+  {% if manufacturer %}
+  <form hx-put="/manufacturers/{{ manufacturer.id }}" hx-swap="none">
+    {% else %}
+    <form hx-post="/manufacturers" hx-swap="none">
+      {% endif %}
+
+      <h3
+        style="font-size:14px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <i class="fa-solid fa-industry" style="margin-right:8px;color:var(--accent)"></i>Manufacturer Details
+      </h3>
+
+      <div class="form-group">
+        <label class="form-label">Name *</label>
+        <input type="text" name="name" class="form-input" placeholder="e.g. Toyota"
+          value="{{ manufacturer.name if manufacturer else '' }}" required>
+      </div>
+      {% if not manufacturer %}
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="is_active" class="form-select">
+          <option value="true" {% if not manufacturer or manufacturer.is_active %}selected{% endif %}>Active</option>
+          <option value="false" {% if manufacturer and not manufacturer.is_active %}selected{% endif %}>Inactive
+          </option>
+        </select>
+      </div>
+      {% endif %}
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+        <a href="{{ '/manufacturers/' + manufacturer.id | string if manufacturer else '/manufacturers' }}"
+          class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-{{ 'floppy-disk' if manufacturer else 'plus' }}"></i>
+          {{ 'Save Changes' if manufacturer else 'Add Manufacturer' }}
+        </button>
+      </div>
+    </form>
+</div>
+{% endblock %}

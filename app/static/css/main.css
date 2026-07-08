@@ -1,0 +1,1765 @@
+/* ── FleetMS Design System ─────────────────────────────────────────── */
+
+/*
+  FIX #1: Merged both :root blocks into one.
+  The original file had a second :root block much later that only added
+  --sidebar-width-collapsed. It now lives here with everything else.
+*/
+:root {
+  --bg: #0f1117;
+  --bg-card: #1a1d27;
+  --bg-sidebar: #13161f;
+  --bg-hover: #212435;
+  --bg-input: #1e2130;
+  --border: #2a2e3f;
+  --border-focus: #4f7ef8;
+
+  --text-primary: #e8eaf0;
+  --text-secondary: #8b91a8;
+  --text-muted: #555d7a;
+
+  --accent: #4f7ef8;
+  --accent-hover: #3d6de6;
+  --accent-subtle: rgba(79, 126, 248, 0.12);
+
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.1);
+  --warning: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.1);
+  --danger: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.1);
+  --info: #60a5fa;
+  --info-bg: rgba(96, 165, 250, 0.1);
+
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 60px;
+  /* FIX #1: moved here from second :root block */
+  --topbar-height: 60px;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 16px;
+
+  --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Light override */
+:root.light {
+  --bg: #f4f5f8;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-hover: #f0f1f5;
+  --bg-input: #f4f5f8;
+  --border: #e2e4ed;
+  --border-focus: #4f7ef8;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --accent-subtle: rgba(79, 126, 248, 0.1);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ───────────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  /*
+    FIX #2: overflow changed from `visible` to `hidden` here in the base rule.
+    The original had `overflow: visible` here and relied on the collapsed state
+    to flip it to `hidden`, but that broke flyout submenus in collapsed mode
+    because `overflow: hidden` clips absolutely-positioned children.
+    Solution: default to `hidden` (correct for the expanded sidebar, which has
+    no flyouts), and explicitly set `overflow: visible` in the collapsed state
+    so fixed-position flyouts can escape the sidebar bounds.
+  */
+  overflow: hidden;
+  transition: width 0.25s ease, transform 0.25s ease, margin-left 0.25s ease;
+  /* FIX #6: transition was declared twice — once here (transform only) and once
+     later in a "smooth transition" block (width + transform + margin-left).
+     The second declaration silently won, dropping nothing but creating confusion.
+     Consolidated here as the single source of truth. The duplicate block below
+     is removed. */
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--topbar-height);
+  /* was: padding-based sizing */
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.brand-icon {
+  width: 34px;
+  height: 34px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 14px 8px 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.nav-item i {
+  width: 16px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.user-widget {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-hover);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.logout-btn {
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  color: var(--danger);
+}
+
+/* ── Sidebar collapse (desktop) ────────────────────────────────────── */
+.sidebar-collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.sidebar-collapse-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sidebar-collapse-btn i {
+  transition: transform 0.25s ease;
+}
+
+html.sidebar-collapsed .sidebar-collapse-btn i {
+  transform: rotate(180deg);
+}
+
+html.sidebar-collapsed .sidebar {
+  width: var(--sidebar-width-collapsed);
+  /*
+    FIX #2 (continued): overflow set to `visible` here so that fixed-position
+    flyout submenus can escape the 60px collapsed sidebar and render correctly.
+    The expanded sidebar above correctly uses `overflow: hidden`.
+  */
+  overflow: visible;
+}
+
+html.sidebar-collapsed .main-content {
+  margin-left: var(--sidebar-width-collapsed);
+}
+
+html.sidebar-collapsed .brand-name,
+html.sidebar-collapsed .nav-item span,
+html.sidebar-collapsed .nav-item .sub-chevron,
+html.sidebar-collapsed .nav-section-label,
+html.sidebar-collapsed .user-info,
+html.sidebar-collapsed .user-avatar {
+  display: none;
+}
+
+html.sidebar-collapsed .sidebar-brand {
+  justify-content: center;
+  padding: 0 12px;
+}
+
+html.sidebar-collapsed .sidebar-nav {
+  padding: 12px 8px;
+}
+
+html.sidebar-collapsed .nav-item {
+  justify-content: center;
+  padding: 10px;
+}
+
+html.sidebar-collapsed .nav-item i {
+  width: auto;
+  font-size: 15px;
+}
+
+html.sidebar-collapsed .user-widget {
+  justify-content: center;
+  padding: 8px 4px;
+}
+
+
+/* Global tooltip — all elements */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 50;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+.topbar-bell[data-tooltip]::after {
+    top: calc(100% + 6px);
+    bottom: auto;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Nav-item tooltips: hidden on expanded sidebar (no display: none needed —
+   just don't show on hover, which is the default since they're opacity: 0) */
+.nav-item[data-tooltip]::after,
+.logout-btn[data-tooltip]::after {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Tooltip on collapsed nav items: reposition to the right of the sidebar
+   and re-enable hover visibility */
+html.sidebar-collapsed .nav-item[data-tooltip]::after,
+html.sidebar-collapsed .logout-btn[data-tooltip]::after {
+  position: fixed;
+  left: calc(var(--sidebar-width-collapsed) + 8px);
+  top: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
+html.sidebar-collapsed .nav-item[data-tooltip]:hover::after,
+html.sidebar-collapsed .logout-btn[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/*
+  FIX #6 (removed): The duplicate transition block that originally appeared here:
+
+    .sidebar,
+    .main-content {
+      transition: width 0.25s ease, transform 0.25s ease, margin-left 0.25s ease;
+    }
+
+  has been deleted. The transition is now declared once on .sidebar (above)
+  and once on .main-content (below), each as part of their own rule.
+*/
+
+/* ── Main Content ──────────────────────────────────────────────────── */
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* FIX #6: transition now lives here, not in a separate shared block */
+  transition: width 0.25s ease, margin-left 0.25s ease;
+}
+
+/* ── Topbar ────────────────────────────────────────────────────────── */
+.topbar {
+  height: var(--topbar-height);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-left {
+  flex: 1;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.topbar-avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+}
+
+/* ── Breadcrumb ────────────────────────────────────────────────────── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.breadcrumb a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: var(--text-primary);
+}
+
+.breadcrumb .sep {
+  color: var(--text-muted);
+}
+
+.breadcrumb .current {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ── Page Content ──────────────────────────────────────────────────── */
+.page-content {
+  padding: 28px 28px;
+  flex: 1;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Stat Cards ────────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+}
+
+.stat-card.green::before {
+  background: var(--success);
+}
+
+.stat-card.yellow::before {
+  background: var(--warning);
+}
+
+.stat-card.red::before {
+  background: var(--danger);
+}
+
+.stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.stat-icon.blue {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.stat-icon.green {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.stat-icon.yellow {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.stat-icon.red {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────── */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+thead th {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 16px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+tbody tr:last-child {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+tbody td {
+  padding: 13px 16px;
+  vertical-align: middle;
+}
+
+/* ── Badges ────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-success {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.badge-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.badge-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.badge-info {
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+.badge-ghost {
+  background: rgba(139, 145, 168, 0.1);
+  color: var(--text-secondary);
+}
+
+.badge-error {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--border);
+}
+
+.btn-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.btn-danger:hover {
+  background: rgba(248, 113, 113, 0.2);
+}
+
+.btn-success {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.btn-success:hover {
+  background: rgba(52, 211, 153, 0.2);
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12.5px;
+}
+
+.btn-icon {
+  padding: 7px;
+}
+
+/* ── Forms ─────────────────────────────────────────────────────────── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/*
+  FIX #7: .form-select was split across two locations in the original file.
+  The base styling appeared here (as part of the .form-input, .form-select,
+  .form-textarea group), and `min-width: 80px` appeared much later near the
+  pagination section. Consolidated into one rule here.
+*/
+.form-input,
+.form-select,
+.form-textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  width: 100%;
+  transition: border-color 0.15s;
+  outline: none;
+}
+
+.form-select {
+  min-width: 80px;
+  /* FIX #7: moved here from pagination section */
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(79, 126, 248, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.form-select option {
+  background: var(--bg-card);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.form-hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.form-error {
+  font-size: 12px;
+  color: var(--danger);
+}
+
+/* ── Vehicle card ──────────────────────────────────────────────────── */
+.vehicle-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  transition: border-color 0.15s, transform 0.15s;
+  text-decoration: none;
+  display: block;
+  color: var(--text-primary);
+}
+
+.vehicle-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.vehicle-plate {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+/* ── Filters bar ───────────────────────────────────────────────────── */
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px 8px 36px;
+  color: var(--text-primary);
+  font-size: 13.5px;
+  width: 240px;
+  position: relative;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus {
+  border-color: var(--border-focus);
+}
+
+.search-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Searchable Select ─────────────────────────────────────────────── */
+.searchable-select {
+  position: relative;
+}
+
+.searchable-select .ss-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  transition: border-color 0.15s;
+}
+
+.searchable-select.open .ss-control,
+.searchable-select .ss-control:focus-within {
+  border-color: var(--border-focus);
+}
+
+.ss-search-icon {
+  color: var(--text-muted);
+  font-size: 12.5px;
+  flex-shrink: 0;
+}
+
+.ss-input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-family: var(--font-sans);
+}
+
+.ss-input::placeholder {
+  color: var(--text-muted);
+}
+
+.ss-clear {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 12px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.ss-clear:hover {
+  color: var(--text-primary);
+}
+
+.ss-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 60;
+  display: none;
+  padding: 6px;
+}
+
+.searchable-select.open .ss-menu {
+  display: block;
+}
+
+.ss-option {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  cursor: pointer;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ss-option:hover,
+.ss-option.active {
+  background: var(--bg-hover);
+}
+
+.ss-option[aria-selected="true"] {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.ss-empty {
+  padding: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ── Toast / Flash Messages ────────────────────────────────────────── */
+
+.flash {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  margin: 16px 28px 0;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.flash button {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.flash-success {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.flash-error {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.flash-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  font-weight: 500;
+  min-width: 280px;
+  max-width: 380px;
+  box-shadow: var(--shadow);
+  pointer-events: all;
+  animation: toastIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  border: 1px solid transparent;
+}
+
+.toast.toast-leaving {
+  animation: toastOut 0.2s ease forwards;
+}
+
+.toast-success {
+  background: var(--bg-card);
+  color: var(--success);
+  border-color: rgba(52, 211, 153, 0.25);
+}
+
+.toast-error {
+  background: var(--bg-card);
+  color: var(--danger);
+  border-color: rgba(248, 113, 113, 0.25);
+}
+
+.toast-warning {
+  background: var(--bg-card);
+  color: var(--warning);
+  border-color: rgba(251, 191, 36, 0.25);
+}
+
+.toast-info {
+  background: var(--bg-card);
+  color: var(--info);
+  border-color: rgba(96, 165, 250, 0.25);
+}
+
+.toast i:first-child {
+  flex-shrink: 0;
+}
+
+.toast-body {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.toast-body strong {
+  color: inherit;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 80px;
+    margin-bottom: 0;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+    max-height: 0;
+    margin-bottom: -10px;
+  }
+}
+
+@media (max-width: 768px) {
+  #toast-container {
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+  }
+
+  .toast {
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+  }
+}
+
+/* ── Dashboard grid ────────────────────────────────────────────────── */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.dashboard-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+/* ── Empty state ───────────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.empty-state i {
+  font-size: 40px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.empty-state h3 {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.empty-state p {
+  font-size: 13px;
+  max-width: 300px;
+}
+
+/* ── Tabs ──────────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 10px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+  transition: all 0.15s;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Detail info rows ──────────────────────────────────────────────── */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ── Modals ────────────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: var(--shadow);
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.modal-desc {
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  margin-bottom: 24px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ── Login page ────────────────────────────────────────────────────── */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  background-image: radial-gradient(ellipse at 20% 50%, rgba(79, 126, 248, 0.06) 0%, transparent 60%);
+}
+
+.auth-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow);
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.auth-logo-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #fff;
+}
+
+.auth-logo-text {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.auth-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.auth-sub {
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  margin-bottom: 28px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.checkbox-row input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+/* ── HTMX loading indicator ────────────────────────────────────────── */
+.htmx-indicator {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.htmx-request .htmx-indicator {
+  opacity: 1;
+}
+
+/* ── Mobile responsive ─────────────────────────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay.open {
+    display: block;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .page-content {
+    padding: 16px;
+  }
+
+  .form-grid,
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+}
+
+/* ── Dividers ──────────────────────────────────────────────────────── */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Code / mono ───────────────────────────────────────────────────── */
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ── Progress bar ──────────────────────────────────────────────────── */
+.progress-bar {
+  background: var(--bg-hover);
+  border-radius: 20px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 20px;
+  background: var(--accent);
+  transition: width 0.5s ease;
+}
+
+.progress-fill.green {
+  background: var(--success);
+}
+
+.progress-fill.yellow {
+  background: var(--warning);
+}
+
+.progress-fill.red {
+  background: var(--danger);
+}
+
+/* ── Alerts widget ─────────────────────────────────────────────────── */
+.alert-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.alert-item:last-child {
+  border-bottom: none;
+}
+
+.alert-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.alert-dot.warning {
+  background: var(--warning);
+}
+
+.alert-dot.danger {
+  background: var(--danger);
+}
+
+.alert-dot.info {
+  background: var(--info);
+}
+
+/* ── Theme toggle button ───────────────────────────────────────────── */
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  transition: color 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+}
+
+.theme-toggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+/* ── Animation ─────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-content {
+  animation: fadeIn 0.2s ease;
+}
+
+/* ── Pagination ────────────────────────────────────────────────────── */
+.pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.pagination-info {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.page-indicator {
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* NOTE: .form-select min-width moved to the Forms section above (FIX #7) */
+
+/* ── Submenu ───────────────────────────────────────────────────────── */
+.nav-item.has-sub {
+  cursor: pointer;
+}
+
+.nav-item.has-sub .sub-chevron {
+  margin-left: auto;
+  font-size: 11px;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.nav-item.has-sub.sub-open .sub-chevron {
+  transform: rotate(180deg);
+}
+
+.submenu {
+  overflow: hidden;
+  max-height: 0;
+  flex-shrink: 0;
+}
+
+.submenu.animated {
+  transition: max-height 0.25s ease;
+}
+
+.submenu.sub-open {
+  max-height: 300px;
+}
+
+.sub-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px 7px 34px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.sub-item::before {
+  content: '';
+  position: absolute;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.15s;
+}
+
+.sub-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sub-item:hover::before {
+  background: var(--accent);
+}
+
+.sub-item.active {
+  color: var(--accent);
+}
+
+.sub-item.active::before {
+  background: var(--accent);
+}
+
+/* ── Collapsed sidebar submenu flyout ──────────────────────────────── */
+/*
+  FIX #3: Resolved the conflict between the max-height animation system
+  (used in expanded mode) and the opacity/fixed-position flyout system
+  (used in collapsed mode).
+
+  Original problem: the collapsed rule set `display: block` and `height: auto !important`
+  but never reset `max-height`, so a submenu without the `sub-open` class still had
+  `max-height: 0` and `overflow: hidden` from the base `.submenu` rule, clipping the flyout.
+
+  Fix: In collapsed mode, explicitly reset `max-height` and `overflow` so the flyout
+  can render at its natural height, independent of the animation state class.
+*/
+html.sidebar-collapsed .submenu {
+  display: block;
+  position: fixed;
+  left: calc(var(--sidebar-width-collapsed) + 4px);
+  max-height: none;
+  /* FIX #3: reset the animation-system constraint */
+  height: auto;
+  overflow: visible;
+  /* FIX #3: reset overflow so content isn't clipped */
+  width: 180px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 200;
+}
+
+html.sidebar-collapsed .nav-item.has-sub:hover+.submenu,
+html.sidebar-collapsed .submenu:hover {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Bridge: invisible pseudo-element fills the gap between the nav item
+   and the flyout so the hover chain doesn't break mid-transit */
+html.sidebar-collapsed .nav-item.has-sub {
+  position: relative;
+  /* ensure positioning context */
+}
+
+html.sidebar-collapsed .nav-item.has-sub::after {
+  content: '';
+  position: fixed;
+  left: calc(var(--sidebar-width-collapsed) - 16px);
+  width: 20px;
+  top: var(--item-top);
+  height: var(--item-height);
+  /* background: rgba(255, 0, 0, 0.2); */
+}
+
+html.sidebar-collapsed .sub-item {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+}
+
+html.sidebar-collapsed .sub-item::before {
+  display: none;
+}

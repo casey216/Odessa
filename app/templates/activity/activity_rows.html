@@ -1,0 +1,76 @@
+{% set action_badges = {
+'create': 'badge-success',
+'update': 'badge-info',
+'delete': 'badge-danger',
+'login': 'badge-warning',
+'logout': 'badge-ghost',
+'export': 'badge-warning',
+} %}
+
+{% set action_icons = {
+'create': 'fa-solid fa-plus',
+'update': 'fa-solid fa-pen',
+'delete': 'fa-solid fa-trash',
+'login': 'fa-solid fa-right-to-bracket',
+'logout': 'fa-solid fa-right-from-bracket',
+'export': 'fa-solid fa-file-export',
+'view': 'fa-solid fa-eye',
+} %}
+
+{% for log in paginated_result.items %}
+<tr>
+    <td style="color:var(--text-secondary);">
+        {{ log.created_at | fmt_date }}
+    </td>
+    <td>
+        {% if log.user_id and users.get(log.user_id) %}
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div class="user-avatar" style="width:24px;height:24px;font-size:10px;">
+                {{ users[log.user_id].full_name[0].upper() }}
+            </div>
+            <a href="/users/{{ log.user_id }}" style="color:var(--text-primary);text-decoration:none;font-size:13px;">
+                {{ users[log.user_id].full_name }}
+            </a>
+        </div>
+        {% else %}
+        <span style="color:var(--text-muted);font-size:13px;">System</span>
+        {% endif %}
+    </td>
+    <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+            <i class="{{ action_icons.get(log.action.lower(), 'fa-solid fa-circle-dot') }}"
+                style="font-size:12px;color:var(--text-muted);width:14px;text-align:center;"></i>
+            <span class="badge {{ action_badges.get(log.action.lower(), 'badge-ghost') }}">
+                {{ log.action.replace('_', ' ').title() }}
+            </span>
+        </div>
+    </td>
+    <td>
+        <div style="font-weight:500;font-size:13px;">{{ log.entity_type }}</div>
+        <a href="/{{ log.entity_type.lower() }}s/{{ log.entity_id }}" class="mono"
+            style="color:var(--accent);text-decoration:none;font-weight:600;font-size:11px;letter-spacing:0.06em;">
+            {{ log.entity_id | string | truncate(8, end='…') }}
+        </a>
+    </td>
+    <td style="max-width:260px;">
+        {% if log.details %}
+        <div
+            style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            {% for key, value in log.details.items() | list %}
+            {% if loop.index <= 2 %} <span style="color:var(--text-muted);">{{ key }}:</span>
+                <span>{{ value }}</span>{% if not loop.last and loop.index < 2 %} &middot; {% endif %} {% endif %} {%
+                    endfor %} </div>
+                    {% else %}
+                    <span style="color:var(--text-muted);font-size:12px;">—</span>
+                    {% endif %}
+    </td>
+    <td style="color:var(--text-muted);font-size:12px;font-family:var(--font-mono);">
+        {{ log.ip_address or '—' }}
+    </td>
+    <td>
+        <a href="/activity/{{ log.id }}" class="btn btn-sm btn-secondary btn-icon" data-tooltip="View">
+            <i class="fa-solid fa-eye"></i>
+        </a>
+    </td>
+</tr>
+{% endfor %}

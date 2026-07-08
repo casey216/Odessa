@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="fleet">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FleetMS{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <script>
+    if (localStorage.getItem('theme') === 'light') {
+      document.documentElement.classList.add('light');
+    }
+    if (localStorage.getItem('sidebarCollapsed') === '1') {
+        document.documentElement.classList.add('sidebar-collapsed');
+      }
+  </script>
+</head>
+<body class="bg-base font-sans">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-truck-fast"></i></div>
+      <span class="brand-name">FleetMS</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Collapse sidebar">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <div class="nav-section-label">Main</div>
+      <a href="/dashboard" data-tooltip="Dashboard" class="nav-item {% if page == 'dashboard' %}active{% endif %}">
+        <i class="fa-solid fa-gauge-high"></i>
+        <span>Dashboard</span>
+      </a>
+      <div class="nav-item has-sub {% if page == 'vehicles' %}active sub-open{% endif %}" onclick="toggleSubmenu(this)">
+        <i class="fa-solid fa-car"></i>
+        <span>Vehicles</span>
+        <i class="fa-solid fa-chevron-down sub-chevron"></i>
+      </div>
+      <div class="submenu {% if page == 'vehicles' %}sub-open{% endif %}">
+        <a href="/manufacturers/" class="sub-item {% if subpage == 'manufacturers' %}active{% endif %}">Manufacturers</a>
+        <a href="/models/" class="sub-item {% if subpage == 'new'     %}active{% endif %}">Models</a>
+        <a href="/vehicles/" class="sub-item {% if subpage == 'groups'  %}active{% endif %}">Vehicles</a>
+        <a href="/vehicles/assignments" class="sub-item {% if subpage == 'assignments' %}active{% endif %}">Assignments</a>
+      </div>
+      <a href="/users" data-tooltip="Users" class="nav-item {% if page == 'users' %}active{% endif %}">
+        <i class="fa-solid fa-users"></i>
+        <span>Users</span>
+      </a>
+
+      <div class="nav-section-label">Operations</div>
+      <a href="/fuel" data-tooltip="Fuel" class="nav-item {% if page == 'fuel' %}active{% endif %}">
+        <i class="fa-solid fa-gas-pump"></i>
+        <span>Fuel Logs</span>
+      </a>
+      <a href="/maintenance" data-tooltip="Maintenance" class="nav-item {% if page == 'maintenance' %}active{% endif %}">
+        <i class="fa-solid fa-wrench"></i>
+        <span>Maintenance</span>
+      </a>
+      <a href="/odometer" data-tooltip="Odometer" class="nav-item {% if page == 'odometer' %}active{% endif %}">
+        <i class="fa-solid fa-gauge"></i>
+        <span>Odometer</span>
+      </a>
+      <a href="/inventory" data-tooltip="Inventory" class="nav-item {% if page == 'inventory' %}active{% endif %}">
+        <i class="fa-solid fa-boxes-stacked"></i>
+        <span>Inventory</span>
+      </a>
+
+      <div class="nav-section-label">Documents</div>
+      <a href="/contracts" data-tooltip="Contracts" class="nav-item {% if page == 'contracts' %}active{% endif %}">
+        <i class="fa-solid fa-file-contract"></i>
+        <span>Contracts</span>
+      </a>
+      <a href="/insurance" data-tooltip="Insurance" class="nav-item {% if page == 'insurance' %}active{% endif %}">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Insurance</span>
+      </a>
+      <a href="/alerts" data-tooltip="Alerts" class="nav-item {% if page == 'alerts' %}active{% endif %}">
+        <i class="fa-solid fa-bell"></i>
+        <span>Alerts</span>
+      </a>
+
+      <div class="nav-section-label">Insights</div>
+      <a href="/reports" data-tooltip="Reports" class="nav-item {% if page == 'reports' %}active{% endif %}">
+        <i class="fa-solid fa-chart-bar"></i>
+        <span>Reports</span>
+      </a>
+      <a href="/activity" data-tooltip="Activity" class="nav-item {% if page == 'activity' %}active{% endif %}">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>Activity</span>
+      </a>
+
+      <div class="nav-section-label">Account</div>
+      <a href="/settings" data-tooltip="Settings" class="nav-item {% if page == 'settings' %}active{% endif %}">
+        <i class="fa-solid fa-gear"></i>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-widget">
+        <div class="user-avatar">
+          {{ user.full_name[0].upper() if user else "?" }}
+        </div>
+        <div class="user-info">
+          <div class="user-name">{{ user.full_name if user else "Guest" }}</div>
+          <div class="user-role">{{ user.role.value.replace('_', ' ').title() if user else "" }}</div>
+        </div>
+        <a hx-post="/auth/logout" data-tooltip="Logout" class="logout-btn" title="Logout">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <!-- Top bar -->
+    <header class="topbar">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="topbar-left">
+        {% block breadcrumb %}{% endblock %}
+      </div>
+      <div class="topbar-right">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle light/dark mode">
+          <i class="fa-solid fa-sun" id="theme-icon-light" style="display:none;"></i>
+          <i class="fa-solid fa-moon" id="theme-icon-dark"></i>
+        </button>
+        <div class="topbar-alerts"
+             hx-get="/api/alerts/count"
+             hx-trigger="load"
+             hx-swap="innerHTML">
+        </div>
+        <a href="/settings/profile" class="topbar-avatar">
+          {{ user.full_name[0].upper() if user else "?" }}
+        </a>
+      </div>
+    </header>
+
+    <!-- Flash messages -->
+    <div id="toast-container"></div>
+
+    <!-- Page content -->
+    <div class="page-content">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <script src="/static/js/main.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

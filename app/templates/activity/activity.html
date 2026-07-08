@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Activity Log — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+  <span class="current"><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px"></i>Activity Log</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<form id="activity-filters" style="display:none;">
+  <input type="hidden" name="action" value="{{ action_filter or '' }}">
+  <input type="hidden" name="entity_type" value="{{ entity_filter or '' }}">
+  <input type="hidden" name="page" value="{{ paginated_result.page }}">
+  <input type="hidden" name="page_size" value="{{ paginated_result.page_size }}">
+</form>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Activity Log</h1>
+    <p class="page-subtitle">{{ paginated_result.total }} event{{ 's' if paginated_result.items|length != 1 }}</p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+  <div class="search-wrapper">
+    <i class="fa-solid fa-search search-icon"></i>
+    <input form="activity-filters" class="search-input" type="search" name="search"
+      placeholder="Search user, action, entity…" value="{{ search or '' }}" hx-get="/activity"
+      hx-trigger="keyup changed delay:300ms" hx-target="#activity-table-body" hx-include="#activity-filters">
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a href="/activity"
+      class="btn btn-sm {% if not action_filter %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+    <a href="/activity?action=create"
+      class="btn btn-sm {% if action_filter == 'create' %}btn-success{% else %}btn-secondary{% endif %}">Create</a>
+    <a href="/activity?action=update"
+      class="btn btn-sm {% if action_filter == 'update' %}btn-secondary{% else %}btn-secondary{% endif %}"
+      style="{% if action_filter == 'update' %}background:var(--info-bg);color:var(--info);{% endif %}">Update</a>
+    <a href="/activity?action=delete"
+      class="btn btn-sm {% if action_filter == 'delete' %}btn-danger{% else %}btn-secondary{% endif %}">Delete</a>
+    <a href="/activity?action=login"
+      class="btn btn-sm {% if action_filter == 'login' %}btn-secondary{% else %}btn-secondary{% endif %}"
+      style="{% if action_filter == 'login' %}background:var(--warning-bg);color:var(--warning);{% endif %}">Login</a>
+  </div>
+
+  {% if entity_types %}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a href="/activity" class="btn btn-sm {% if not entity_filter %}btn-primary{% else %}btn-secondary{% endif %}">All
+      types</a>
+    {% for et in entity_types %}
+    <a href="/activity?entity_type={{ et }}"
+      class="btn btn-sm {% if entity_filter == et %}btn-primary{% else %}btn-secondary{% endif %}">{{ et }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <input type="hidden" name="action_filter" value="{{ action_filter or '' }}">
+  <input type="hidden" name="entity_filter" value="{{ entity_filter or '' }}">
+</div>
+
+{% if paginated_result.items %}
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>User</th>
+        <th>Action</th>
+        <th>Entity</th>
+        <th>Details</th>
+        <th>IP</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="activity-table-body">
+      {% include "activity/activity_rows.html" %}
+    </tbody>
+  </table>
+</div>
+<div class="pagination-bar">
+  <div class="pagination-info">
+    Showing
+    <strong>
+      {{ ((paginated_result.page - 1) * paginated_result.page_size) + 1 }}
+    </strong>
+    –
+    <strong>
+      {{ [paginated_result.page * paginated_result.page_size, paginated_result.total] | min }}
+    </strong>
+    of
+    <strong>{{ paginated_result.total }}</strong>
+    records
+  </div>
+
+  <div class="pagination-controls">
+    <form method="get" style="display:flex;align-items:center;gap:8px;">
+
+      <label for="page_size">Rows:</label>
+      <select id="page_size" name="page_size" onchange="this.form.submit()" class="form-select">
+        {% for size in [10, 25, 50, 100] %}
+        <option value="{{ size }}" {% if paginated_result.page_size==size %}selected{% endif %}>
+          {{ size }}
+        </option>
+        {% endfor %}
+      </select>
+      <input type="hidden" name="action_filter" value="{{ request.query_params.get("action") or '' }}">
+      <input type="hidden" name="entity_filter" value="{{ request.query_params.get("entity_type") or ''}}">
+    </form>
+
+    <div style="display:flex;gap:6px;">
+      {% if paginated_result.links.prev %}
+      <a href="{{ paginated_result.links.prev }}"
+        class="btn btn-sm btn-secondary">
+        <i class="fa-solid fa-chevron-left"></i>
+      </a>
+      {% else %}
+      <button class="btn btn-sm btn-secondary" disabled>
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      {% endif %}
+
+      <span class="page-indicator">
+        Page {{ paginated_result.page }} of {{ paginated_result.pages }}
+      </span>
+
+      {% if paginated_result.links.next %}
+      <a href="{{ paginated_result.links.next }}"
+        class="btn btn-sm btn-secondary">
+        <i class="fa-solid fa-chevron-right"></i>
+      </a>
+      {% else %}
+      <button class="btn btn-sm btn-secondary" disabled>
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <i class="fa-solid fa-clock-rotate-left"></i>
+    <h3>No activity yet</h3>
+    <p>Actions taken by users will appear here.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function setFilter(name, value) {
+    document.querySelector(`#activity-filters [name="${name}"]`).value = value;
+  }
+
+  function setPage(page) {
+    document.querySelector('#activity-filters [name="page"]').value = page;
+  }
+</script>
+{% endblock %}
