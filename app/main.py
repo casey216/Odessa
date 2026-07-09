@@ -4,9 +4,11 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import engine
 from app.core.exception_handlers import register_exception_handlers
 from app.core.logging import logger
 from app.routers import (
@@ -19,11 +21,18 @@ from app.routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables on startup
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables created")
+    try:
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+
+        logger.info("Database connection successful")
+
+    except SQLAlchemyError as e:
+        logger.error(f"Database connection failed: {e}")
+        raise
+
     yield
+
     await engine.dispose()
 
 
