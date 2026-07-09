@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.context import RequestContext
 from app.core.database import Base
-from app.models.activity import ActivityLog
+from app.models import ActivityLog
 
 EXCLUDED_MODELS: set[type[Base]] = {ActivityLog}
 

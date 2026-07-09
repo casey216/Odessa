@@ -9,7 +9,7 @@ from sqlalchemy.orm import InstrumentedAttribute
 from sqlalchemy.sql import Select
 
 from app.core.database import Base
-from app.core.exceptions import NotFoundError, ValidationError
+from app.core.exceptions.base import NotFoundError, ValidationError
 
 
 class FilterOp(StrEnum):

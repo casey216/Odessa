@@ -11,7 +11,7 @@ from app.core.auth import decode_token, has_permission
 from app.core.context import RequestContext
 from app.core.database import AsyncSessionLocal
 from app.core.pagination import PaginationParams
-from app.models.user import User
+from app.models import User
 from app.schemas.base import QueryParams
 from app.schemas.user import UserRole
 

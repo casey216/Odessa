@@ -5,7 +5,7 @@ from jose import JWTError, jwt
 from pwdlib import PasswordHash
 
 from app.core.config import settings
-from app.models.user import User
+from app.models import User
 from app.schemas.user import UserRole
 
 pwd_context = PasswordHash.recommended()

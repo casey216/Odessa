@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
 from app.core.database import engine
-from app.core.exception_handlers import register_exception_handlers
+from app.core.exceptions.handlers import register_exception_handlers
 from app.core.logging import logger
 from app.routers import (
     activity,

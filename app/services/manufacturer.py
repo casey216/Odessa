@@ -5,7 +5,7 @@ from fastapi import Request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ConflictError
+from app.core.exceptions.base import ConflictError
 from app.core.pagination import PaginatedResponse, paginate
 from app.core.utils import is_unique_violation
 from app.crud.manufacturer import ManufacturerCrud

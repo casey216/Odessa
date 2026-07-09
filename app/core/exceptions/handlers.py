@@ -1,7 +1,13 @@
 from fastapi import FastAPI, Request, Response, status
 from sqlalchemy.exc import IntegrityError
 
-from app.core.exceptions import ConflictError, NotFoundError, ValidationError
+from app.core.exceptions.base import (
+    AuthenticationError,
+    AuthorizationError,
+    ConflictError,
+    NotFoundError,
+    ValidationError,
+)
 from app.core.logging import logger
 
 
@@ -33,6 +39,22 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(ValidationError)
     async def handle_validation(request: Request, exc: ValidationError) -> Response:
         resp = Response(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        resp.headers["HX-Flash"] = f"error:{str(exc)}"
+        return resp
+
+    @app.exception_handler(AuthenticationError)
+    async def handle_authentication(
+        request: Request, exc: AuthenticationError
+    ) -> Response:
+        resp = Response(status_code=status.HTTP_401_UNAUTHORIZED)
+        resp.headers["HX-Flash"] = f"error:{str(exc)}"
+        return resp
+
+    @app.exception_handler(AuthorizationError)
+    async def handle_authorization(
+        request: Request, exc: AuthorizationError
+    ) -> Response:
+        resp = Response(status_code=status.HTTP_403_FORBIDDEN)
         resp.headers["HX-Flash"] = f"error:{str(exc)}"
         return resp
 

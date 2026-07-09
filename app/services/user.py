@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_password_hash
-from app.core.exceptions import ConflictError
+from app.core.exceptions.base import ConflictError
 from app.core.pagination import PaginatedResponse, paginate
 from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.user import UserCrud

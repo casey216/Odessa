@@ -5,7 +5,8 @@ from uuid import UUID
 
 from pydantic import ConfigDict, EmailStr, model_validator
 
-from app.core.exceptions import DateFilterError, PasswordError, ValidationError
+from app.core.exceptions.base import ValidationError
+from app.core.exceptions.validation import DateFilterError, PasswordError
 from app.schemas.base import FormBaseModel
 
 
