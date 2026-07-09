@@ -16,7 +16,7 @@ from sqlalchemy import UUID as SAUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from uuid_extensions import uuid7
 
-from app.database import Base
+from app.core.database import Base
 from app.schemas.user import UserRole
 
 

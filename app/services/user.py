@@ -5,14 +5,14 @@ from fastapi import Request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import get_password_hash
+from app.core.auth import get_password_hash
 from app.core.exceptions import ConflictError
 from app.core.pagination import PaginatedResponse, paginate
+from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.user import UserCrud
 from app.models.user import User
 from app.schemas.base import QueryParams
 from app.schemas.user import UserCreate, UserFilter, UserOut, UserUpdate
-from app.utils import is_unique_violation, parse_unique_violation
 
 
 class UserService:

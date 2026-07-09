@@ -4,7 +4,7 @@ from typing import Optional
 from jose import JWTError, jwt
 from pwdlib import PasswordHash
 
-from app.config import settings
+from app.core.config import settings
 from app.models.user import User
 from app.schemas.user import UserRole
 

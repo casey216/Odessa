@@ -6,8 +6,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import has_permission
-from app.dependencies import (
+from app.core.auth import has_permission
+from app.core.dependencies import (
     get_audited_db,
     get_db,
     get_query_params,

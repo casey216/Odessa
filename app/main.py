@@ -5,10 +5,10 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.config import settings
+from app.core.config import settings
+from app.core.database import Base, engine
 from app.core.exception_handlers import register_exception_handlers
 from app.core.logging import logger
-from app.database import Base, engine
 from app.routers import (
     activity,
     auth,

@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import get_db, get_query_params, get_template, require_user
+from app.core.dependencies import get_db, get_query_params, get_template, require_user
 from app.models.user import User
 from app.schemas.activity import ActivityLogFilter
 from app.schemas.base import QueryParams

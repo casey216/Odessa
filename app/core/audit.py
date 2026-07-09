@@ -4,7 +4,7 @@ from sqlalchemy import event, inspect
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.context import RequestContext
-from app.database import Base
+from app.core.database import Base
 from app.models.activity import ActivityLog
 
 EXCLUDED_MODELS: set[type[Base]] = {ActivityLog}

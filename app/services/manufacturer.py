@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictError
 from app.core.pagination import PaginatedResponse, paginate
+from app.core.utils import is_unique_violation
 from app.crud.manufacturer import ManufacturerCrud
 from app.models.manufacturer import Manufacturer
 from app.models.user import User
@@ -17,7 +18,6 @@ from app.schemas.manufacturer import (
     ManufacturerOut,
     ManufacturerUpdate,
 )
-from app.utils import is_unique_violation
 
 
 class ManufacturerService:

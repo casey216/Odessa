@@ -6,11 +6,11 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import decode_token, has_permission
 from app.core.audit import register_audit_listener
+from app.core.auth import decode_token, has_permission
 from app.core.context import RequestContext
+from app.core.database import AsyncSessionLocal
 from app.core.pagination import PaginationParams
-from app.database import AsyncSessionLocal
 from app.models.user import User
 from app.schemas.base import QueryParams
 from app.schemas.user import UserRole
