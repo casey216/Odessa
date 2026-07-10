@@ -23,6 +23,9 @@ class Permission(Base):
 
     user_links = relationship("UserPermission", back_populates="permission")
 
+    def __repr__(self) -> str:
+        return f"<Permission id={self.id} code={self.code!r}>"
+
 
 class UserPermission(Base):
     __tablename__ = "user_permissions"

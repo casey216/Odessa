@@ -21,6 +21,7 @@ from app.core.database import Base
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.vehicle_model import VehicleModel
 
 
 class Manufacturer(Base):
@@ -51,6 +52,10 @@ class Manufacturer(Base):
 
     created_by_user: Mapped["User | None"] = relationship(foreign_keys=[created_by])
     updated_by_user: Mapped["User | None"] = relationship(foreign_keys=[updated_by])
+
+    vehicle_models: Mapped[list["VehicleModel | None"]] = relationship(
+        back_populates="manufacturer"
+    )
 
     def __repr__(self) -> str:
         return f"<Manufacturer id={self.id} name={self.name!r}>"

@@ -8,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
-from app.core.database import engine
+from app.core.database import AsyncSessionLocal, engine
 from app.core.exceptions.handlers import register_exception_handlers
 from app.core.logging import logger
 from app.routers import (
@@ -17,6 +17,7 @@ from app.routers import (
     manufacturer,
     users,
 )
+from app.scripts.sync_permissions import sync_permissions
 
 
 @asynccontextmanager
@@ -26,6 +27,9 @@ async def lifespan(app: FastAPI):
             await conn.execute(text("SELECT 1"))
 
         logger.info("Database connection successful")
+
+        async with AsyncSessionLocal() as db:
+            await sync_permissions(db)
 
     except SQLAlchemyError as e:
         logger.error(f"Database connection failed: {e}")

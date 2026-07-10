@@ -74,3 +74,6 @@ class User(Base):
     # Relationships
     activity_logs = relationship("ActivityLog", back_populates="user")
     permission_links = relationship("UserPermission", back_populates="user")
+
+    def __repr__(self) -> str:
+        return f"<User id={self.id} name={self.full_name!r}>"
