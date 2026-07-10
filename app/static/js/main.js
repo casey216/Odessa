@@ -79,16 +79,12 @@ function showToast(message, type = 'success', duration = 5000) {
 }
 
 // Fire toasts for query-param flash messages on page load
-document.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-
-  if (params.has('success')) {
-    const msg = params.get('success');
-    showToast(msg === '1' ? 'Changes saved successfully' : msg, 'success');
+document.addEventListener('DOMContentLoaded', (e) => {
+  const flashHeader = e.detail.xhr.getResponseHeader('HX-Flash');
+  if (flashHeader) {
+    const [type, ...rest] = flashHeader.split(':');
+    showToast(rest.join(':').trim(), type);
   }
-  if (params.has('error')) showToast(params.get('error'), 'error');
-  if (params.has('warning')) showToast(params.get('warning'), 'warning');
-  if (params.has('info')) showToast(params.get('info'), 'info');
 });
 
 // ── HTMX: toast support for hx-post responses ─────────────────────────
@@ -434,7 +430,9 @@ function redirectOnSuccess(url, event) {
   }
 }
 
-function redirectAfterDelete(url, event) {
-  event.preventDefault(); // Prevent HTMX from swapping
-  window.location.href = url;
+function redirect(url, event) {
+  if (event.detail.xhr.status === 200) {
+    event.preventDefault(); // Prevent HTMX from swapping
+    window.location.href = url;
+  }
 }

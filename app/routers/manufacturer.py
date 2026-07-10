@@ -6,16 +6,15 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import has_permission
 from app.core.dependencies import (
     get_audited_db,
-    get_current_user,
     get_db,
     get_query_params,
     get_template,
     require_permission,
     require_user,
 )
+from app.core.permissions import PermissionCode
 from app.models.user import User
 from app.schemas.base import QueryParams
 from app.schemas.manufacturer import (
@@ -23,17 +22,10 @@ from app.schemas.manufacturer import (
     ManufacturerFilter,
     ManufacturerUpdate,
 )
-from app.services.manufacturer import manufacturer_service
+from app.services.manufacturer_service import manufacturer_service
 
 TempDpnds = Annotated[Jinja2Templates, Depends(get_template)]
 router = APIRouter(dependencies=[Depends(require_user)])
-
-
-def _perms(current_user: User) -> dict:
-    return {
-        "can_write": has_permission(current_user, "manufacturers", "write"),
-        "can_delete": has_permission(current_user, "manufacturers", "delete"),
-    }
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -42,11 +34,13 @@ async def list_manufacturers(
     templates: TempDpnds,
     db: Annotated[AsyncSession, Depends(get_db)],
     params: Annotated[QueryParams, Depends(get_query_params(ManufacturerFilter))],
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[
+        User, Depends(require_permission(PermissionCode.manufacturer_read))
+    ],
 ):
     if params.filters.include_deleted and not current_user.is_super_user:
         raise HTTPException(
-            status_code=403, detail="Only admins can view deleted manufacturers"
+            status_code=403, detail="Only system admins can view deleted manufacturers"
         )
 
     result = await manufacturer_service.list(request, db, params)
@@ -58,7 +52,6 @@ async def list_manufacturers(
         "manufacturers": result.items,
         "search": params.filters.search,
         "status_filter": params.filters.is_active,
-        **_perms(current_user),
         "user": current_user,
         "pagination": {
             "total": result.total,
@@ -69,7 +62,6 @@ async def list_manufacturers(
         },
     }
 
-    # htmx search box hits this same endpoint and swaps just the table body
     if request.headers.get("HX-Request"):
         return templates.TemplateResponse(
             "manufacturers/manufacturer_rows.html", context
@@ -83,7 +75,7 @@ async def new_manufacturer_form(
     request: Request,
     templates: TempDpnds,
     current_user: Annotated[
-        User, Depends(require_permission("manufacturers", "write"))
+        User, Depends(require_permission(PermissionCode.manufacturer_create))
     ],
 ):
     return templates.TemplateResponse(
@@ -92,7 +84,6 @@ async def new_manufacturer_form(
             "request": request,
             "manufacturer": None,
             "user": current_user,
-            **_perms(current_user),
             "page": "vehicles",
             "subpage": "manufacturers",
         },
@@ -106,7 +97,7 @@ async def edit_manufacturer_form(
     db: Annotated[AsyncSession, Depends(get_db)],
     manufacturer_id: UUID,
     current_user: Annotated[
-        User, Depends(require_permission("manufacturers", "write"))
+        User, Depends(require_permission(PermissionCode.manufacturer_update))
     ],
 ):
     manufacturer = await manufacturer_service.get_or_404(db, manufacturer_id)
@@ -116,7 +107,6 @@ async def edit_manufacturer_form(
             "request": request,
             "manufacturer": manufacturer,
             "user": current_user,
-            **_perms(current_user),
             "page": "vehicles",
             "subpage": "manufacturers",
         },
@@ -129,7 +119,9 @@ async def read_manufacturer(
     templates: TempDpnds,
     db: Annotated[AsyncSession, Depends(get_db)],
     manufacturer_id: UUID,
-    current_user: Annotated[User, Depends(require_permission("manufacturers", "read"))],
+    current_user: Annotated[
+        User, Depends(require_permission(PermissionCode.manufacturer_read))
+    ],
 ):
     manufacturer = await manufacturer_service.get_or_404(db, manufacturer_id)
     return templates.TemplateResponse(
@@ -138,7 +130,6 @@ async def read_manufacturer(
             "request": request,
             "manufacturer": manufacturer,
             "user": current_user,
-            **_perms(current_user),
             "page": "vehicles",
             "subpage": "manufacturers",
         },
@@ -151,7 +142,7 @@ async def create_manufacturer(
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     manufacturer_in: Annotated[ManufacturerCreate, Form()],
     current_user: Annotated[
-        User, Depends(require_permission("manufacturers", "write"))
+        User, Depends(require_permission(PermissionCode.manufacturer_create))
     ],
 ):
     manufacturer = await manufacturer_service.create(db, manufacturer_in, current_user)
@@ -167,7 +158,7 @@ async def update_manufacturer(
     manufacturer_id: UUID,
     manufacturer_in: Annotated[ManufacturerUpdate, Form()],
     current_user: Annotated[
-        User, Depends(require_permission("manufacturers", "write"))
+        User, Depends(require_permission(PermissionCode.manufacturer_update))
     ],
 ):
     manufacturer = await manufacturer_service.update(
@@ -183,7 +174,7 @@ async def delete_manufacturer(
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     manufacturer_id: UUID,
     current_user: Annotated[
-        User, Depends(require_permission("manufacturers", "delete"))
+        User, Depends(require_permission(PermissionCode.manufacturer_delete))
     ],
 ):
     return await manufacturer_service.delete(db, manufacturer_id)
@@ -196,7 +187,7 @@ async def activate_manufacturer(
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     manufacturer_id: UUID,
     current_user: Annotated[
-        User, Depends(require_permission("manufacturers", "write"))
+        User, Depends(require_permission(PermissionCode.manufacturer_update))
     ],
 ):
     manufacturer = await manufacturer_service.set_active_status(
@@ -204,7 +195,7 @@ async def activate_manufacturer(
     )
     return templates.TemplateResponse(
         "manufacturers/manufacturer_rows.html",
-        {"request": request, "manufacturers": [manufacturer], **_perms(current_user)},
+        {"request": request, "manufacturers": [manufacturer]},
     )
 
 
@@ -215,7 +206,7 @@ async def deactivate_manufacturer(
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     manufacturer_id: UUID,
     current_user: Annotated[
-        User, Depends(require_permission("manufacturers", "write"))
+        User, Depends(require_permission(PermissionCode.manufacturer_update))
     ],
 ):
     manufacturer = await manufacturer_service.set_active_status(
@@ -223,5 +214,5 @@ async def deactivate_manufacturer(
     )
     return templates.TemplateResponse(
         "manufacturers/manufacturer_rows.html",
-        {"request": request, "manufacturers": [manufacturer], **_perms(current_user)},
+        {"request": request, "manufacturers": [manufacturer]},
     )

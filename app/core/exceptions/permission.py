@@ -7,7 +7,10 @@ from .base import (
 
 
 class InsufficientPermissionError(AuthorizationError):
-    pass
+    def __init__(
+        self, message: str = "You do not have sufficient permissions for this action."
+    ) -> None:
+        super().__init__(message)
 
 
 class PermissionNotFoundError(NotFoundError):

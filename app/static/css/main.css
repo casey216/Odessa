@@ -1763,3 +1763,7 @@ html.sidebar-collapsed .sub-item {
 html.sidebar-collapsed .sub-item::before {
   display: none;
 }
+
+body.standalone-body {
+  display: block;
+}

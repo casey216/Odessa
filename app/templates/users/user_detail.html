@@ -37,7 +37,6 @@
     </div>
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;">
-  {% if can_write %}
   <button type="button" class="btn btn-secondary" hx-post="/users/{{ target_user.id }}/{{ 'deactivate' if target_user.is_active else 'activate' }}">
     <i class="fa-solid fa-{{ 'toggle-off' if target_user.is_active else 'toggle-on' }}"></i>
     {{ 'Deactivate' if target_user.is_active else 'Activate' }}
@@ -45,13 +44,10 @@
   <a href="/users/{{ target_user.id }}/edit" class="btn btn-primary">
     <i class="fa-solid fa-pen"></i> Edit
   </a>
-  {% endif %}
-  {% if can_delete %}
   <button type="button" class="btn btn-danger" hx-delete="/users/{{ target_user.id }}"
     hx-confirm="Delete {{ target_user.name }}?" hx-on::before-swap="redirectAfterDelete('/users', event)">
     <i class="fa-solid fa-trash"></i> Delete
   </button>
-  {% endif %}
   </div>
 </div>
 

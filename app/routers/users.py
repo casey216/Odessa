@@ -6,19 +6,18 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import has_permission
 from app.core.dependencies import (
     get_audited_db,
     get_db,
     get_query_params,
     get_template,
     require_permission,
-    require_user,
 )
+from app.core.permissions import PermissionCode
 from app.models.user import User
 from app.schemas.base import QueryParams
 from app.schemas.user import UserCreate, UserFilter, UserRole, UserUpdate
-from app.services.user import user_service
+from app.services.user_service import user_service
 
 router = APIRouter()
 
@@ -26,24 +25,19 @@ router = APIRouter()
 TempDpnds = Annotated[Jinja2Templates, Depends(get_template)]
 
 
-def _perms(current_user: User) -> dict:
-    return {
-        "can_write": has_permission(current_user, "manufacturers", "write"),
-        "can_delete": has_permission(current_user, "manufacturers", "delete"),
-    }
-
-
 @router.get("/", response_class=HTMLResponse)
 async def list_users(
     request: Request,
     templates: TempDpnds,
-    current_user: Annotated[User, Depends(require_user)],
+    current_user: Annotated[
+        User, Depends(require_permission(PermissionCode.user_read))
+    ],
     params: Annotated[QueryParams, Depends(get_query_params(UserFilter))],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     if params.filters.include_deleted and not current_user.is_super_user:
         raise HTTPException(
-            status_code=403, detail="Only admins can view deleted manufacturers"
+            status_code=403, detail="Only system admins can view deleted users"
         )
 
     result = await user_service.list(request, db, params)
@@ -53,7 +47,6 @@ async def list_users(
         "page": "users",
         "users": result.items,
         "search": params.filters.search,
-        **_perms(current_user),
         "user": current_user,
         "roles": [r.value for r in UserRole],
         "pagination": {
@@ -75,7 +68,7 @@ async def list_users(
 async def new_user_form(
     request: Request,
     templates: TempDpnds,
-    current_user: User = Depends(require_permission("users", "write")),
+    current_user: User = Depends(require_permission(PermissionCode.user_create)),
 ):
     return templates.TemplateResponse(
         "users/user_form.html",
@@ -93,7 +86,9 @@ async def new_user_form(
 async def create_user(
     request: Request,
     user_in: Annotated[UserCreate, Form()],
-    current_user: Annotated[User, Depends(require_permission("users", "write"))],
+    current_user: Annotated[
+        User, Depends(require_permission(PermissionCode.user_create))
+    ],
     db: Annotated[AsyncSession, Depends(get_audited_db)],
 ):
     user = await user_service.create(db, user_in, current_user)
@@ -107,17 +102,16 @@ async def read_user(
     user_id: UUID,
     request: Request,
     templates: TempDpnds,
-    current_user: User = Depends(require_user),
+    current_user: User = Depends(require_permission(PermissionCode.user_read)),
     db: AsyncSession = Depends(get_db),
 ):
-    user = await user_service.get_or_404(db, user_id)
+    user = await user_service.get_or_404(db, user_id, current_user)
     return templates.TemplateResponse(
         "users/user_detail.html",
         {
             "request": request,
             "user": current_user,
             "page": "users",
-            **_perms(current_user),
             "target_user": user,
         },
     )
@@ -128,15 +122,10 @@ async def edit_user_form(
     user_id: UUID,
     request: Request,
     templates: TempDpnds,
-    current_user: User = Depends(require_user),
+    current_user: User = Depends(require_permission(PermissionCode.user_update)),
     db: AsyncSession = Depends(get_db),
 ):
-    if current_user.id != user_id and not has_permission(
-        current_user, "users", "write"
-    ):
-        raise HTTPException(status_code=403)
-
-    target_user = await user_service.get_or_404(db, user_id)
+    target_user = await user_service.get_or_404(db, user_id, current_user)
     return templates.TemplateResponse(
         "users/user_form.html",
         {
@@ -154,7 +143,7 @@ async def edit_user_form(
 async def update_user(
     user_id: UUID,
     update_data: Annotated[UserUpdate, Form()],
-    current_user: User = Depends(require_user),
+    current_user: User = Depends(require_permission(PermissionCode.user_update)),
     db: AsyncSession = Depends(get_audited_db),
 ):
     user = await user_service.update(db, user_id, update_data, current_user)
@@ -166,7 +155,7 @@ async def update_user(
 @router.post("/{user_id}/activate")
 async def activate_user(
     user_id: UUID,
-    current_user: User = Depends(require_permission("users", "write")),
+    current_user: User = Depends(require_permission(PermissionCode.user_activate)),
     db: AsyncSession = Depends(get_audited_db),
 ):
     await user_service.set_active_status(db, user_id, is_active=True)
@@ -178,7 +167,7 @@ async def activate_user(
 @router.post("/{user_id}/deactivate")
 async def deactivate_user(
     user_id: UUID,
-    current_user: User = Depends(require_permission("users", "write")),
+    current_user: User = Depends(require_permission(PermissionCode.user_deactivate)),
     db: AsyncSession = Depends(get_audited_db),
 ):
     await user_service.set_active_status(db, user_id, is_active=False)
@@ -191,6 +180,8 @@ async def deactivate_user(
 async def delete_user(
     user_id: UUID,
     db: Annotated[AsyncSession, Depends(get_audited_db)],
-    current_user: Annotated[User, Depends(require_permission("users", "delete"))],
+    current_user: Annotated[
+        User, Depends(require_permission(PermissionCode.user_delete))
+    ],
 ):
     return await user_service.delete(db, user_id)

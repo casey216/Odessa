@@ -13,9 +13,7 @@
     <h1 class="page-title">Manufacturers</h1>
     <p class="page-subtitle">{{ pagination["total"] }} manufacturer{{ 's' if pagination["total"] != 1 }}</p>
   </div>
-  {% if can_write %}
   <a href="/manufacturers/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Manufacturer</a>
-  {% endif %}
 </div>
 
 <!-- Filters -->
@@ -61,10 +59,8 @@
     <i class="fa-solid fa-industry"></i>
     <h3>No manufacturers yet</h3>
     <p>Add your first manufacturer to get started.</p>
-    {% if can_write %}
     <a href="/manufacturers/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-plus"></i> Add
       Manufacturer</a>
-    {% endif %}
   </div>
 </div>
 {% endif %}

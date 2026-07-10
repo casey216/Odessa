@@ -5,12 +5,13 @@ from fastapi import Request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import get_password_hash
-from app.core.exceptions.base import ConflictError
+from app.core.exceptions import ConflictError, InsufficientPermissionError
 from app.core.pagination import PaginatedResponse, paginate
+from app.core.security import get_password_hash
 from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.user import UserCrud
 from app.models.user import User
+from app.policies.user_policy import UserPolicy
 from app.schemas.base import QueryParams
 from app.schemas.user import UserCreate, UserFilter, UserOut, UserUpdate
 
@@ -47,8 +48,11 @@ class UserService:
     async def get(self, db: AsyncSession, id: UUID) -> User | None:
         return await self.crud.get(db, id)
 
-    async def get_or_404(self, db: AsyncSession, id: UUID) -> User:
-        return await self.crud.get_or_404(db, id)
+    async def get_or_404(self, db: AsyncSession, id: UUID, current_user: User) -> User:
+        user = await self.crud.get_or_404(db, id)
+        if not UserPolicy.can_read(user, current_user):
+            raise InsufficientPermissionError()
+        return user
 
     async def list(
         self, request: Request, db: AsyncSession, params: QueryParams
@@ -64,6 +68,9 @@ class UserService:
     async def update(
         self, db: AsyncSession, id: UUID, data: UserUpdate, current_user: User
     ) -> User:
+        user = await self.crud.get_or_404(db, id)
+        if not UserPolicy.can_update(user, current_user):
+            raise InsufficientPermissionError()
         try:
             instance = await self.crud.update(
                 db,

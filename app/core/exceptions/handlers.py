@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Response, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy.exc import IntegrityError
 
 from app.core.exceptions.base import (
@@ -46,17 +47,19 @@ def register_exception_handlers(app: FastAPI) -> None:
     async def handle_authentication(
         request: Request, exc: AuthenticationError
     ) -> Response:
-        resp = Response(status_code=status.HTTP_401_UNAUTHORIZED)
-        resp.headers["HX-Flash"] = f"error:{str(exc)}"
-        return resp
+        return RedirectResponse("/auth/login", status_code=302)
 
     @app.exception_handler(AuthorizationError)
     async def handle_authorization(
         request: Request, exc: AuthorizationError
     ) -> Response:
-        resp = Response(status_code=status.HTTP_403_FORBIDDEN)
-        resp.headers["HX-Flash"] = f"error:{str(exc)}"
-        return resp
+        if request.headers.get("HX-Request"):
+            resp = Response(status_code=status.HTTP_403_FORBIDDEN)
+            resp.headers["HX-Flash"] = f"error:{str(exc)}"
+            return resp
+        return request.app.state.templates.TemplateResponse(
+            "403.html", {"request": request}, status_code=403
+        )
 
     @app.exception_handler(IntegrityError)
     async def integrity_handler(request: Request, exc: IntegrityError) -> Response:

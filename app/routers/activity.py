@@ -9,8 +9,8 @@ from app.core.dependencies import get_db, get_query_params, get_template, requir
 from app.models.user import User
 from app.schemas.activity import ActivityLogFilter
 from app.schemas.base import QueryParams
-from app.services.activity import activity_service
-from app.services.user import user_service
+from app.services.activity_service import activity_service
+from app.services.user_service import user_service
 
 router = APIRouter()
 

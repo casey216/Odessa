@@ -13,9 +13,7 @@
     <h1 class="page-title">Users</h1>
     <p class="page-subtitle">{{ pagination["total"] }} user{{ 's' if pagination["total"] != 1 }} registered</p>
   </div>
-  {% if can_write %}
   <a href="/users/new" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Add User</a>
-  {% endif %}
 </div>
 
 <!-- Filters -->
@@ -68,9 +66,7 @@
   <div class="empty-state">
     <i class="fa-solid fa-users"></i>
     <h3>No users found</h3>
-    {% if can_write %}
     <a href="/users/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-user-plus"></i> Add User</a>
-    {% endif %}
   </div>
 </div>
 {% endif %}

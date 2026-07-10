@@ -44,7 +44,7 @@ class BaseCrud[ModelT: Base]:
     DEFAULT_SORT_COLUMN = "created_at"
     SEARCH_COLUMNS: tuple[str, ...]
 
-    def _base_query(self) -> Select:
+    def _base_query(self) -> Select[tuple[ModelT]]:
         return select(self.MODEL)
 
     def _exclude_soft_deleted(self, query: Select, *, include_deleted: bool) -> Select:

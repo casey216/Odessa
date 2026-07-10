@@ -7,9 +7,9 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import create_access_token, verify_password
 from app.core.config import settings
 from app.core.dependencies import get_current_user, get_db, get_template
+from app.core.security import create_access_token, verify_password
 from app.models.activity import ActivityLog
 from app.models.user import User
 
@@ -74,7 +74,7 @@ async def login(
     )
     await db.commit()
 
-    token = create_access_token({"sub": str(user.id), "role": user.role.value})
+    token = create_access_token(user.id)
     response = RedirectResponse(url="/dashboard", status_code=302)
     response.set_cookie(
         "access_token",

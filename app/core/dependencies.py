@@ -1,19 +1,26 @@
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.audit import register_audit_listener
-from app.core.auth import decode_token, has_permission
 from app.core.context import RequestContext
 from app.core.database import AsyncSessionLocal
+from app.core.exceptions import (
+    InsufficientPermissionError,
+    InvalidCredentialsError,
+    InvalidTokenError,
+)
 from app.core.pagination import PaginationParams
-from app.models import User
+from app.core.permissions import PermissionCode
+from app.core.security import decode_token
+from app.models import User, UserPermission
 from app.schemas.base import QueryParams
-from app.schemas.user import UserRole
+from app.services.permission_service import permission_service
 
 
 async def get_db():
@@ -26,20 +33,36 @@ async def get_db():
 
 async def get_current_user(
     request: Request, db: AsyncSession = Depends(get_db)
-) -> Optional[User]:
+) -> User | None:
     token = request.cookies.get("access_token")
     if not token:
         return None
-    payload = decode_token(token)
-    if not payload:
-        return None
-    user_id = payload.get("sub")
-    if not user_id:
-        return None
-    result = await db.execute(
+    user_id = decode_token(token)
+    return await db.scalar(
         select(User).where(User.id == user_id, User.is_active.is_(True))
     )
-    return result.scalar_one_or_none()
+
+
+async def get_current_user_with_permissions(
+    request: Request, db: AsyncSession = Depends(get_db)
+) -> User:
+    token = request.cookies.get(
+        "access_token",
+    )
+    if not token:
+        raise InvalidTokenError
+    user_id = decode_token(token)
+    result = await db.execute(
+        select(User)
+        .options(
+            selectinload(User.permission_links).selectinload(UserPermission.permission)
+        )
+        .where(User.id == user_id, User.is_active.is_(True))
+    )
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise InvalidCredentialsError()
+    return user
 
 
 def get_request_context(
@@ -75,28 +98,13 @@ async def require_user(request: Request, db: AsyncSession = Depends(get_db)) -> 
     return user
 
 
-def require_role(*roles: UserRole):
-    async def checker(request: Request, db: AsyncSession = Depends(get_db)) -> User:
-        user = await get_current_user(request, db)
-        if not user:
-            raise HTTPException(status_code=302, headers={"Location": "/auth/login"})
-        if user.role not in roles:
-            raise HTTPException(status_code=403, detail="Insufficient permissions")
-        return user
-
-    return checker
-
-
-def require_permission(resource: str, action: str):
+def require_permission(permission_code: PermissionCode):
     async def checker(
-        request: Request, db: AsyncSession = Depends(get_audited_db)
+        current_user: Annotated[User, Depends(get_current_user_with_permissions)],
     ) -> User:
-        user = await get_current_user(request, db)
-        if not user:
-            raise HTTPException(status_code=302, headers={"Location": "/auth/login"})
-        if not has_permission(user, resource, action):
-            raise HTTPException(status_code=403, detail="Insufficient permissions")
-        return user
+        if not permission_service.user_has_permission(current_user, permission_code):
+            raise InsufficientPermissionError()
+        return current_user
 
     return checker
 

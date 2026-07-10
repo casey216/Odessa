@@ -27,21 +27,19 @@
     </div>
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;">
-    {% if can_write %}
-    <button type="button" class="btn btn-secondary" onclick="toggleActive()">
+    <button type="button" class="btn btn-secondary"
+    hx-post="/manufacturers/{{ manufacturer.id }}/{{ 'deactivate' if manufacturer.is_active else 'activate' }}"
+    hx-on::before-swap="redirect('/manufacturers/{{ manufacturer.id }}', event)">
       <i class="fa-solid fa-{{ 'toggle-off' if manufacturer.is_active else 'toggle-on' }}"></i>
       {{ 'Deactivate' if manufacturer.is_active else 'Activate' }}
     </button>
-    <a href="/manufacturers/{{ manufacturer.id }}/edit" class="btn btn-primary"><i class="fa-solid fa-pen"></i> Edit</a>
-    {% endif %}
-    {% if can_delete %}
+    <a hx-get="/manufacturers/{{ manufacturer.id }}/edit" class="btn btn-primary"><i class="fa-solid fa-pen"></i> Edit</a>
       <button type="button" class="btn btn-danger"
         hx-delete="/manufacturers/{{ manufacturer.id }}"
         hx-confirm="Delete {{ manufacturer.name }}?"
-        hx-on::before-swap="redirectAfterDelete('/manufacturers', event)">
+        hx-on::before-swap="redirect('/manufacturers', event)">
         <i class="fa-solid fa-trash"></i> Delete
       </button>
-    {% endif %}
   </div>
 </div>
 
