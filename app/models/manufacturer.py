@@ -53,7 +53,7 @@ class Manufacturer(Base):
     created_by_user: Mapped["User | None"] = relationship(foreign_keys=[created_by])
     updated_by_user: Mapped["User | None"] = relationship(foreign_keys=[updated_by])
 
-    vehicle_models: Mapped[list["VehicleModel | None"]] = relationship(
+    vehicle_models: Mapped[list["VehicleModel"]] = relationship(
         back_populates="manufacturer"
     )
 

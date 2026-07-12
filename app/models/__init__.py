@@ -1,8 +1,21 @@
-from .activity import ActivityLog as ActivityLog
-from .manufacturer import Manufacturer as Manufacturer
-from .permission import Permission as Permission
-from .permission import PermissionEffect as PermissionEffect
-from .permission import UserPermission as UserPermission
-from .user import User as User
-from .user import UserRole as UserRole
-from .vehicle_model import VehicleModel as VehicleModel
+from .activity import ActivityLog
+from .manufacturer import Manufacturer
+from .permission import Permission, PermissionEffect, UserPermission
+from .tag import Tag, vehicle_tags
+from .user import User, UserRole
+from .vehicle import Vehicle
+from .vehicle_model import VehicleModel
+
+__all__ = [
+    "ActivityLog",
+    "Manufacturer",
+    "Permission",
+    "PermissionEffect",
+    "Tag",
+    "UserPermission",
+    "User",
+    "UserRole",
+    "Vehicle",
+    "VehicleModel",
+    "vehicle_tags",
+]

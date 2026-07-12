@@ -15,7 +15,10 @@ from app.routers import (
     activity,
     auth,
     manufacturer,
+    permission,
     users,
+    vehicle,
+    vehicle_model,
 )
 from app.scripts.sync_permissions import sync_permissions
 
@@ -107,7 +110,12 @@ app.state.templates = templates
 # Include routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(manufacturer.router, prefix="/manufacturers", tags=["manufacturers"])
+app.include_router(
+    vehicle_model.router, prefix="/vehicle-models", tags=["vehicle models"]
+)
+app.include_router(vehicle.router, prefix="/vehicles", tags=["vehicles"])
 app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(permission.router)
 app.include_router(activity.router, prefix="/activity", tags=["activity logs"])
 
 

@@ -436,3 +436,13 @@ function redirect(url, event) {
     window.location.href = url;
   }
 }
+
+document.body.addEventListener("htmx:configRequest", (event) => {
+  if (event.detail.verb !== "get") return;
+
+  for (const [key, value] of Object.entries(event.detail.parameters)) {
+    if (value === "") {
+      delete event.detail.parameters[key];
+    }
+  }
+});

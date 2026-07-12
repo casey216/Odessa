@@ -33,7 +33,7 @@
       <i class="fa-solid fa-{{ 'toggle-off' if manufacturer.is_active else 'toggle-on' }}"></i>
       {{ 'Deactivate' if manufacturer.is_active else 'Activate' }}
     </button>
-    <a hx-get="/manufacturers/{{ manufacturer.id }}/edit" class="btn btn-primary"><i class="fa-solid fa-pen"></i> Edit</a>
+    <a href="/manufacturers/{{ manufacturer.id }}/edit" class="btn btn-primary"><i class="fa-solid fa-pen"></i> Edit</a>
       <button type="button" class="btn btn-danger"
         hx-delete="/manufacturers/{{ manufacturer.id }}"
         hx-confirm="Delete {{ manufacturer.name }}?"

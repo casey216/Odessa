@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if vehicle else 'New' }} Vehicle — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/vehicles">Vehicles</a>
+    <span class="sep">/</span>
+    <span class="current">{{ 'Edit ' + vehicle.vin if vehicle else 'New Vehicle' }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ 'Edit Vehicle' if vehicle else 'Add New Vehicle' }}</h1>
+        <p class="page-subtitle">{{ 'Update vehicle information' if vehicle else 'Register a new vehicle' }}</p>
+    </div>
+</div>
+
+<div class="card" style="max-width:560px;">
+    {% if vehicle %}
+    <form hx-put="/vehicles/{{ vehicle.id }}" hx-swap="none">
+        {% else %}
+        <form hx-post="/vehicles" hx-swap="none">
+            {% endif %}
+
+            <h3
+                style="font-size:14px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+                <i class="fa-solid fa-truck" style="margin-right:8px;color:var(--accent)"></i>Vehicle Details
+            </h3>
+
+            <div class="form-group">
+                <label class="form-label">Model *</label>
+                <select name="vehicle_model_id" class="form-select" required>
+                    <option value="" disabled {% if not vehicle %}selected{% endif %}>Select model</option>
+                    {% for vehicle_model in vehicle_models %}
+                    <option value="{{ vehicle_model.id }}" {% if vehicle and vehicle.vehicle_model_id==vehicle_model.id
+                        %}selected{% endif %}>
+                        {{ vehicle_model.manufacturer.name }} {{ vehicle_model.name }} ({{ vehicle_model.year }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">VIN *</label>
+                <input type="text" name="vin" class="form-input" placeholder="17-character VIN" minlength="11"
+                    maxlength="17" value="{{ vehicle.vin if vehicle else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">License Plate</label>
+                <input type="text" name="license_plate" class="form-input" placeholder="e.g. ABC-1234"
+                    value="{{ vehicle.license_plate if vehicle and vehicle.license_plate else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Status *</label>
+                <select name="status" class="form-select" required>
+                    {% for s in statuses %}
+                    <option value="{{ s.value }}" {% if vehicle and vehicle.status==s %}selected{% endif %}>
+                        {{ s.value | replace('_', ' ') | capitalize }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Color</label>
+                <input type="text" name="color" class="form-input" placeholder="e.g. White"
+                    value="{{ vehicle.color if vehicle and vehicle.color else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Odometer (km)</label>
+                <input type="number" name="odometer_km" class="form-input" min="0"
+                    value="{{ vehicle.odometer_km if vehicle else 0 }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Purchase Date</label>
+                <input type="date" name="purchase_date" class="form-input"
+                    value="{{ vehicle.purchase_date if vehicle and vehicle.purchase_date else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Purchase Price</label>
+                <input type="text" inputmode="decimal" name="purchase_price" id="purchase-price-input"
+                    class="form-input" placeholder="e.g. 25,000"
+                    value="{{ '{:,.2f}'.format(vehicle.purchase_price) if vehicle and vehicle.purchase_price else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Tags</label>
+                {% set current_tag_names = vehicle.tags | map(attribute='name') | list if vehicle else [] %}
+                <div class="multiselect" id="tags-multiselect" style="position:relative;">
+                    <button type="button" class="form-select multiselect-trigger" id="tags-trigger"
+                        style="display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;cursor:pointer;">
+                        <span id="tags-trigger-label">Select tags</span>
+                        <i class="fa-solid fa-chevron-down" style="font-size:11px;color:var(--text-secondary);"></i>
+                    </button>
+                    <div class="multiselect-panel" id="tags-panel" hidden
+                        style="position:absolute;z-index:10;margin-top:4px;background:var(--bg,#fff);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 12px rgba(0,0,0,0.08);padding:8px;max-height:220px;overflow-y:auto;min-width:260px;">
+                        {% for t in tag_choices %}
+                        <label
+                            style="display:flex;align-items:center;gap:8px;font-weight:normal;padding:6px 8px;border-radius:6px;cursor:pointer;">
+                            <input type="checkbox" name="tags" value="{{ t.value }}" {% if t.value in current_tag_names
+                                %}checked{% endif %}>
+                            {{ t.value | replace('_', ' ') | capitalize }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+                <a href="{{ '/vehicles/' + vehicle.id | string if vehicle else '/vehicles' }}"
+                    class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-{{ 'floppy-disk' if vehicle else 'plus' }}"></i>
+                    {{ 'Save Changes' if vehicle else 'Add Vehicle' }}
+                </button>
+            </div>
+        </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        // --- Tags multi-select dropdown ---
+        const container = document.getElementById('tags-multiselect');
+        const trigger = document.getElementById('tags-trigger');
+        const label = document.getElementById('tags-trigger-label');
+        const panel = document.getElementById('tags-panel');
+        const checkboxes = panel.querySelectorAll('input[type=checkbox]');
+
+        function updateTagsLabel() {
+            const checked = Array.from(checkboxes).filter((cb) => cb.checked);
+            if (checked.length === 0) {
+                label.textContent = 'Select tags';
+            } else if (checked.length <= 2) {
+                label.textContent = checked
+                    .map((cb) => cb.parentElement.textContent.trim())
+                    .join(', ');
+            } else {
+                label.textContent = checked.length + ' tags selected';
+            }
+        }
+
+        trigger.addEventListener('click', () => {
+            panel.hidden = !panel.hidden;
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!container.contains(event.target)) {
+                panel.hidden = true;
+            }
+        });
+
+        checkboxes.forEach((cb) => cb.addEventListener('change', updateTagsLabel));
+        updateTagsLabel();
+
+        // --- Purchase price comma formatting ---
+        const priceInput = document.getElementById('purchase-price-input');
+
+        function formatPrice(value) {
+            const raw = value.replace(/,/g, '').trim();
+            if (raw === '' || isNaN(Number(raw))) return value;
+            const [intPart, decPart] = raw.split('.');
+            const formattedInt = Number(intPart || 0).toLocaleString('en-US');
+            return decPart !== undefined ? formattedInt + '.' + decPart : formattedInt;
+        }
+
+        function unformatPrice(value) {
+            return value.replace(/,/g, '');
+        }
+
+        priceInput.addEventListener('blur', () => {
+            priceInput.value = formatPrice(priceInput.value);
+        });
+
+        priceInput.addEventListener('focus', () => {
+            priceInput.value = unformatPrice(priceInput.value);
+        });
+    })();
+</script>
+{% endblock %}

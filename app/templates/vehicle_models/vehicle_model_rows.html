@@ -1,0 +1,51 @@
+{% for vehicle_model in vehicle_models %}
+<tr id="vehicle-model-row-{{ vehicle_model.id }}">
+    <td>
+        <a href="/vehicle-models/{{ vehicle_model.id }}"
+            style="color:var(--text-primary);text-decoration:none;font-weight:500;">
+            {{ vehicle_model.name }}
+        </a>
+    </td>
+    <td>
+        {% if vehicle_model.manufacturer %}
+        <a href="/manufacturers/{{ vehicle_model.manufacturer.id }}" style="color:var(--text-secondary);">
+            {{ vehicle_model.manufacturer.name }}
+        </a>
+        {% endif %}
+    </td>
+    <td style="color:var(--text-secondary);">{{ vehicle_model.year }}</td>
+    <td><span class="badge badge-ghost">{{ vehicle_model.fuel_type.value | capitalize }}</span></td>
+    <td style="color:var(--text-secondary);">{{ vehicle_model.transmission.value | replace('_', ' ') | capitalize }}
+    </td>
+    <td>
+        {% if vehicle_model.is_active %}
+        <span class="badge badge-success">Active</span>
+        {% else %}
+        <span class="badge badge-ghost">Inactive</span>
+        {% endif %}
+    </td>
+    <td>
+        <div style="display:flex;gap:6px;">
+            <a href="/vehicle-models/{{ vehicle_model.id }}" class="btn btn-sm btn-secondary btn-icon"
+                data-tooltip="View">
+                <i class="fa-solid fa-eye"></i>
+            </a>
+            <a hx-get="/vehicle-models/{{ vehicle_model.id }}/edit" class="btn btn-sm btn-secondary btn-icon"
+                data-tooltip="Edit">
+                <i class="fa-solid fa-pen"></i>
+            </a>
+            <button type="button" class="btn btn-sm btn-secondary btn-icon"
+                data-tooltip="{{ 'Deactivate' if vehicle_model.is_active else 'Activate' }}"
+                hx-post="/vehicle-models/{{ vehicle_model.id }}/{{ 'deactivate' if vehicle_model.is_active else 'activate' }}"
+                hx-target="closest tr" hx-swap="outerHTML">
+                <i class="fa-solid fa-{{ 'toggle-off' if vehicle_model.is_active else 'toggle-on' }}"></i>
+            </button>
+            <button class="btn btn-sm btn-danger btn-icon" data-tooltip="Delete"
+                hx-delete="/vehicle-models/{{ vehicle_model.id }}" hx-confirm="Delete {{ vehicle_model.name }}?"
+                hx-target="closest tr" hx-swap="delete">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+    </td>
+</tr>
+{% endfor %}

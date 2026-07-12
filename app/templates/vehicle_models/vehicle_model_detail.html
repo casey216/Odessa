@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ vehicle_model.name }} — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/vehicle-models">Vehicle Models</a>
+    <span class="sep">/</span>
+    <span class="current">{{ vehicle_model.name }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display:flex;align-items:center;gap:16px;">
+        <div
+            style="width:52px;height:52px;background:var(--accent-subtle);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--accent);">
+            <i class="fa-solid fa-car"></i>
+        </div>
+        <div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <h1 class="page-title">{{ vehicle_model.name }}</h1>
+                <span class="badge {{ 'badge-success' if vehicle_model.is_active else 'badge-ghost' }}">
+                    {{ 'Active' if vehicle_model.is_active else 'Inactive' }}
+                </span>
+            </div>
+            <p class="page-subtitle">
+                {% if vehicle_model.manufacturer %}
+                <a href="/manufacturers/{{ vehicle_model.manufacturer.id }}">{{ vehicle_model.manufacturer.name }}</a>
+                &middot;
+                {% endif %}
+                {{ vehicle_model.year }}
+            </p>
+        </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button type="button" class="btn btn-secondary"
+            hx-post="/vehicle-models/{{ vehicle_model.id }}/{{ 'deactivate' if vehicle_model.is_active else 'activate' }}"
+            hx-on::before-swap="redirect('/vehicle-models/{{ vehicle_model.id }}', event)">
+            <i class="fa-solid fa-{{ 'toggle-off' if vehicle_model.is_active else 'toggle-on' }}"></i>
+            {{ 'Deactivate' if vehicle_model.is_active else 'Activate' }}
+        </button>
+        <a href="/vehicle-models/{{ vehicle_model.id }}/edit" class="btn btn-primary">
+            <i class="fa-solid fa-pen"></i>Edit
+        </a>
+        <button type="button" class="btn btn-danger" hx-delete="/vehicle-models/{{ vehicle_model.id }}"
+            hx-confirm="Delete {{ vehicle_model.name }}?" hx-on::before-swap="redirect('/vehicle-models', event)">
+            <i class="fa-solid fa-trash"></i> Delete
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">Name</div>
+            <div class="info-value">{{ vehicle_model.name }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Manufacturer</div>
+            <div class="info-value">
+                {% if vehicle_model.manufacturer %}
+                <a href="/manufacturers/{{ vehicle_model.manufacturer.id }}">{{ vehicle_model.manufacturer.name }}</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Year</div>
+            <div class="info-value">{{ vehicle_model.year }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Fuel Type</div>
+            <div class="info-value">{{ vehicle_model.fuel_type.value | capitalize }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Transmission</div>
+            <div class="info-value">{{ vehicle_model.transmission.value | replace('_', ' ') | capitalize }}</div>
+        </div>
+        {% if vehicle_model.seating_capacity %}
+        <div class="info-item">
+            <div class="info-label">Seating Capacity</div>
+            <div class="info-value">{{ vehicle_model.seating_capacity }}</div>
+        </div>
+        {% endif %}
+        {% if vehicle_model.engine_displacement_cc %}
+        <div class="info-item">
+            <div class="info-label">Engine Displacement</div>
+            <div class="info-value">{{ vehicle_model.engine_displacement_cc }} cc</div>
+        </div>
+        {% endif %}
+        {% if vehicle_model.horsepower %}
+        <div class="info-item">
+            <div class="info-label">Horsepower</div>
+            <div class="info-value">{{ vehicle_model.horsepower }} hp</div>
+        </div>
+        {% endif %}
+        <div class="info-item">
+            <div class="info-label">Status</div>
+            <div class="info-value">{{ 'Active' if vehicle_model.is_active else 'Inactive' }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Created</div>
+            <div class="info-value">{{ vehicle_model.created_at | fmt_date }}</div>
+        </div>
+        {% if vehicle_model.updated_at %}
+        <div class="info-item">
+            <div class="info-label">Last Updated</div>
+            <div class="info-value">{{ vehicle_model.updated_at | fmt_date }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

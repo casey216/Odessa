@@ -23,7 +23,7 @@ class PaginationLinks(BaseModel):
     next: str | None = None
 
 
-class PaginatedResponse[T](BaseModel):
+class PaginatedResponse[T: BaseModel](BaseModel):
     items: list[T]
     total: int
     page: int
@@ -39,7 +39,7 @@ def build_link(request: Request, page: int) -> str:
     return str(request.url.replace_query_params(**query_params))
 
 
-async def paginate[T](
+async def paginate[T: BaseModel](
     request: Request,
     db: AsyncSession,
     query: Select,
@@ -52,7 +52,9 @@ async def paginate[T](
 
     result = await db.execute(query.offset(params.offset).limit(params.page_size))
 
-    items = result.scalars().all()
+    orm_items = result.scalars().unique().all()
+
+    items = [schema.model_validate(item) for item in orm_items]
 
     pages = ceil(total / params.page_size) if total else 0
 
@@ -62,8 +64,8 @@ async def paginate[T](
         next=(build_link(request, params.page + 1) if params.page < pages else None),
     )
 
-    return PaginatedResponse[T](
-        items=list(items),
+    return PaginatedResponse[schema](
+        items=items,
         total=total,
         page=params.page,
         page_size=params.page_size,

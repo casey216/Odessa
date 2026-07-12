@@ -44,7 +44,7 @@ class BaseCrud[ModelT: Base]:
     DEFAULT_SORT_COLUMN = "created_at"
     SEARCH_COLUMNS: tuple[str, ...]
 
-    def _base_query(self) -> Select[tuple[ModelT]]:
+    def _base_query(self) -> Select:
         return select(self.MODEL)
 
     def _exclude_soft_deleted(self, query: Select, *, include_deleted: bool) -> Select:
@@ -80,7 +80,12 @@ class BaseCrud[ModelT: Base]:
         return instance
 
     async def get(self, db: AsyncSession, id: UUID) -> ModelT | None:
-        return await db.get(self.MODEL, id)
+        id_column = getattr(self.MODEL, "id", None)
+        if id_column is None:
+            raise NotImplementedError(f"{self.MODEL.__name__} has no 'id' column")
+        stmt = self._base_query().where(id_column == id)
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
 
     async def get_or_404(self, db: AsyncSession, id: UUID) -> ModelT:
         instance = await self.get(db, id)

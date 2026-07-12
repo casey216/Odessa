@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if vehicle_model else 'New' }} Vehicle Model — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/vehicle-models">Vehicle Models</a>
+    <span class="sep">/</span>
+    <span class="current">{{ 'Edit ' + vehicle_model.name if vehicle_model else 'New Vehicle Model' }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ 'Edit Vehicle Model' if vehicle_model else 'Add New Vehicle Model' }}</h1>
+        <p class="page-subtitle">{{ 'Update vehicle model information' if vehicle_model else 'Register a new vehicle
+            model' }}
+        </p>
+    </div>
+</div>
+
+<div class="card" style="max-width:560px;">
+    {% if vehicle_model %}
+    <form hx-put="/vehicle-models/{{ vehicle_model.id }}" hx-swap="none">
+        {% else %}
+        <form hx-post="/vehicle-models" hx-swap="none">
+            {% endif %}
+
+            <h3
+                style="font-size:14px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+                <i class="fa-solid fa-car" style="margin-right:8px;color:var(--accent)"></i>Vehicle Model Details
+            </h3>
+
+            <div class="form-group">
+                <label class="form-label">Manufacturer *</label>
+                <select name="manufacturer_id" class="form-select" required>
+                    <option value="" disabled {% if not vehicle_model %}selected{% endif %}>Select manufacturer</option>
+                    {% for manufacturer in manufacturers %}
+                    <option value="{{ manufacturer.id }}" {% if vehicle_model and
+                        vehicle_model.manufacturer_id==manufacturer.id %}selected{% endif %}>
+                        {{ manufacturer.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Name *</label>
+                <input type="text" name="name" class="form-input" placeholder="e.g. Corolla"
+                    value="{{ vehicle_model.name if vehicle_model else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Year *</label>
+                <input type="number" name="year" class="form-input" min="1900" max="2100" placeholder="e.g. 2024"
+                    value="{{ vehicle_model.year if vehicle_model else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Fuel Type *</label>
+                <select name="fuel_type" class="form-select" required>
+                    {% for fuel in fuel_types %}
+                    <option value="{{ fuel.value }}" {% if vehicle_model and vehicle_model.fuel_type==fuel %}selected{%
+                        endif %}>
+                        {{ fuel.value | capitalize }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Transmission *</label>
+                <select name="transmission" class="form-select" required>
+                    {% for t in transmissions %}
+                    <option value="{{ t.value }}" {% if vehicle_model and vehicle_model.transmission==t %}selected{%
+                        endif %}>
+                        {{ t.value | replace('_', ' ') | capitalize }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Seating Capacity</label>
+                <input type="number" name="seating_capacity" class="form-input" min="1" placeholder="e.g. 5"
+                    value="{{ vehicle_model.seating_capacity if vehicle_model and vehicle_model.seating_capacity else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Engine Displacement (cc)</label>
+                <input type="number" name="engine_displacement_cc" class="form-input" min="0" placeholder="e.g. 1800"
+                    value="{{ vehicle_model.engine_displacement_cc if vehicle_model and vehicle_model.engine_displacement_cc else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Horsepower</label>
+                <input type="number" name="horsepower" class="form-input" min="0" placeholder="e.g. 140"
+                    value="{{ vehicle_model.horsepower if vehicle_model and vehicle_model.horsepower else '' }}">
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+                <a href="{{ '/vehicle-models/' + vehicle_model.id | string if vehicle_model else '/vehicle-models' }}"
+                    class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-{{ 'floppy-disk' if vehicle_model else 'plus' }}"></i>
+                    {{ 'Save Changes' if vehicle_model else 'Add Vehicle Model' }}
+                </button>
+            </div>
+        </form>
+</div>
+{% endblock %}

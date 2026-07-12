@@ -25,6 +25,7 @@ from app.core.database import Base
 if TYPE_CHECKING:
     from app.models.manufacturer import Manufacturer
     from app.models.user import User
+    from app.models.vehicle import Vehicle
 
 
 class FuelType(str, PyEnum):
@@ -92,6 +93,7 @@ class VehicleModel(Base):
     manufacturer: Mapped["Manufacturer"] = relationship(
         foreign_keys=[manufacturer_id], back_populates="vehicle_models"
     )
+    vehicles: Mapped[list["Vehicle"]] = relationship(back_populates="vehicle_model")
     created_by_user: Mapped["User | None"] = relationship(foreign_keys=[created_by])
     updated_by_user: Mapped["User | None"] = relationship(foreign_keys=[updated_by])
 

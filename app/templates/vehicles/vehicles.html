@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Vehicles — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <span class="current"><i class="fa-solid fa-truck" style="margin-right:6px"></i>Vehicles</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Vehicles</h1>
+        <p class="page-subtitle">{{ pagination["total"] }} vehicle{{ 's' if pagination["total"] != 1 }}</p>
+    </div>
+    <a href="/vehicles/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Vehicle</a>
+</div>
+
+<!-- Filters -->
+<form class="filters-bar" hx-get="/vehicles" hx-target="#vehicle-table-body"
+    hx-trigger="change from:select, keyup changed delay:300ms from:input">
+    <div class="search-wrapper">
+        <i class="fa-solid fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search VIN or plate" name="search"
+            value="{{ search or '' }}">
+    </div>
+
+    <select class="form-select" name="vehicle_model_id" style="max-width:220px;">
+        <option value="">All models</option>
+        {% for vehicle_model in vehicle_models %}
+        <option value="{{ vehicle_model.id }}" {% if vehicle_model_filter==vehicle_model.id %}selected{% endif %}>
+            {{ vehicle_model.manufacturer.name }} {{ vehicle_model.name }} ({{ vehicle_model.year }})
+        </option>
+        {% endfor %}
+    </select>
+
+    <select class="form-select" name="status" style="max-width:180px;">
+        <option value="">All statuses</option>
+        {% for s in statuses %}
+        <option value="{{ s.value }}" {% if status_filter==s %}selected{% endif %}>
+            {{ s.value | replace('_', ' ') | capitalize }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <select class="form-select" name="tag" style="max-width:180px;">
+        <option value="">All tags</option>
+        {% for t in tag_choices %}
+        <option value="{{ t.value }}" {% if tag_filter==t %}selected{% endif %}>
+            {{ t.value | replace('_', ' ') | capitalize }}
+        </option>
+        {% endfor %}
+    </select>
+</form>
+
+{% if vehicles %}
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>VIN</th>
+                <th>Model</th>
+                <th>Plate</th>
+                <th>Status</th>
+                <th>Tags</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="vehicle-table-body">
+            {% include "vehicles/vehicle_rows.html" %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <i class="fa-solid fa-truck"></i>
+        <h3>No vehicles yet</h3>
+        <p>Add your first vehicle to get started.</p>
+        <a href="/vehicles/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-plus"></i> Add
+            Vehicle</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
