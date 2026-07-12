@@ -90,7 +90,7 @@
         {% endif %}
         <div class="info-item">
             <div class="info-label">Odometer</div>
-            <div class="info-value">{{ vehicle.odometer_km }} km</div>
+            <div class="info-value">{{ vehicle.odometer_km | km }}</div>
         </div>
         {% if vehicle.purchase_date %}
         <div class="info-item">

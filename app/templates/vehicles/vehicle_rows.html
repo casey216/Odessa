@@ -24,6 +24,7 @@
             {{ vehicle.status.value | replace('_', ' ') | capitalize }}
         </span>
     </td>
+    <td style="color:var(--text-secondary);white-space:nowrap;">{{ vehicle.odometer_km | km or '—' }}</td>
     <td>
         {% for tag in vehicle.tags %}
         <span class="badge badge-ghost" style="margin-right:4px;">{{ tag.name }}</span>
