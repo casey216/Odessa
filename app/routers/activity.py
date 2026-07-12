@@ -27,7 +27,7 @@ async def get_activity_list(
 ):
     context = await activity_service.get_activity_list(request, db, params)
     entity_types = {activity.entity_type for activity in context.items}
-    results = await user_service.list_for_view(db)
+    results = await user_service.list(request, db, params)
     users = {user.id: user for user in results}
 
     if request.headers.get("HX-Request"):

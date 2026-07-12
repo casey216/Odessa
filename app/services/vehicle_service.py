@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions.base import ConflictError
 from app.core.pagination import PaginatedResponse, paginate
-from app.core.utils import is_unique_violation
+from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.tag import tag_crud
 from app.crud.vehicle import VehicleCrud
 from app.models.tag import Tag
@@ -42,9 +42,7 @@ class VehicleService:
         except IntegrityError as e:
             await db.rollback()
             if is_unique_violation(e):
-                raise ConflictError(
-                    f"Vehicle with VIN '{data.vin}' already exists."
-                ) from e
+                raise ConflictError(parse_unique_violation(e)) from e
             raise
         return await self.crud.get_or_404(db, instance.id)
 
@@ -92,9 +90,7 @@ class VehicleService:
         except IntegrityError as e:
             await db.rollback()
             if is_unique_violation(e):
-                raise ConflictError(
-                    f"Vehicle with VIN '{data.vin}' already exists."
-                ) from e
+                raise ConflictError(parse_unique_violation(e)) from e
             raise
 
         return await self.crud.get_or_404(db, id)

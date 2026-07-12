@@ -430,13 +430,15 @@ function redirectOnSuccess(url, event) {
   }
 }
 
+// Redirect HTMX request without swapping
 function redirect(url, event) {
   if (event.detail.xhr.status === 200) {
-    event.preventDefault(); // Prevent HTMX from swapping
+    event.preventDefault();
     window.location.href = url;
   }
 }
 
+// Remove empty query params from url before get request
 document.body.addEventListener("htmx:configRequest", (event) => {
   if (event.detail.verb !== "get") return;
 
@@ -445,4 +447,42 @@ document.body.addEventListener("htmx:configRequest", (event) => {
       delete event.detail.parameters[key];
     }
   }
+});
+
+// Thousands formatting for input fields
+function attachThousandsFormatting(input, { allowDecimal = false } = {}) {
+  function format(value) {
+    const raw = value.replace(/,/g, "").trim();
+
+    if (raw === "" || isNaN(Number(raw))) return value;
+
+    if (allowDecimal) {
+      const [intPart, decPart] = raw.split(".");
+      const formattedInt = Number(intPart || 0).toLocaleString("en-US");
+      return decPart !== undefined
+        ? formattedInt + "." + decPart
+        : formattedInt;
+    }
+
+    return Number(raw).toLocaleString("en-US");
+  }
+
+  function unformat(value) {
+    return value.replace(/,/g, "");
+  }
+
+  input.addEventListener("blur", () => {
+    input.value = format(input.value);
+  });
+
+  input.addEventListener("focus", () => {
+    input.value = unformat(input.value);
+  });
+}
+
+// Automatically attach to all matching inputs
+document.querySelectorAll(".thousands").forEach((input) => {
+  attachThousandsFormatting(input, {
+    allowDecimal: input.dataset.decimal === "true",
+  });
 });

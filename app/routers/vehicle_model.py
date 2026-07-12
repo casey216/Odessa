@@ -171,11 +171,9 @@ async def create_vehicle_model(
         User, Depends(require_permission(PermissionCode.vehicle_model_create))
     ],
 ):
-    vehicle_model = await vehicle_model_service.create(
-        db, vehicle_model_in, current_user
-    )
+    await vehicle_model_service.create(db, vehicle_model_in, current_user)
     response = HTMLResponse(content="", status_code=status.HTTP_201_CREATED)
-    response.headers["HX-Redirect"] = f"/vehicle-models/{vehicle_model.id}"
+    response.headers["HX-Redirect"] = "/vehicle-models"
     return response
 
 

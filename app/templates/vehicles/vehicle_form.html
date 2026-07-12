@@ -73,8 +73,8 @@
 
             <div class="form-group">
                 <label class="form-label">Odometer (km)</label>
-                <input type="number" name="odometer_km" class="form-input" min="0"
-                    value="{{ vehicle.odometer_km if vehicle else 0 }}">
+                <input type="text" inputmode="numeric" name="odometer_km" id="odometer-input" class="form-input thousands"
+                    data-decimal="true" placeholder="e.g. 12,500" value="{{ '{:,}'.format(vehicle.odometer_km) if vehicle else 0 }}">
             </div>
 
             <div class="form-group">
@@ -86,7 +86,7 @@
             <div class="form-group">
                 <label class="form-label">Purchase Price</label>
                 <input type="text" inputmode="decimal" name="purchase_price" id="purchase-price-input"
-                    class="form-input" placeholder="e.g. 25,000"
+                    class="form-input thousands" data-decimal="true" placeholder="e.g. 25,000"
                     value="{{ '{:,.2f}'.format(vehicle.purchase_price) if vehicle and vehicle.purchase_price else '' }}">
             </div>
 
@@ -160,29 +160,6 @@
 
         checkboxes.forEach((cb) => cb.addEventListener('change', updateTagsLabel));
         updateTagsLabel();
-
-        // --- Purchase price comma formatting ---
-        const priceInput = document.getElementById('purchase-price-input');
-
-        function formatPrice(value) {
-            const raw = value.replace(/,/g, '').trim();
-            if (raw === '' || isNaN(Number(raw))) return value;
-            const [intPart, decPart] = raw.split('.');
-            const formattedInt = Number(intPart || 0).toLocaleString('en-US');
-            return decPart !== undefined ? formattedInt + '.' + decPart : formattedInt;
-        }
-
-        function unformatPrice(value) {
-            return value.replace(/,/g, '');
-        }
-
-        priceInput.addEventListener('blur', () => {
-            priceInput.value = formatPrice(priceInput.value);
-        });
-
-        priceInput.addEventListener('focus', () => {
-            priceInput.value = unformatPrice(priceInput.value);
-        });
     })();
 </script>
 {% endblock %}

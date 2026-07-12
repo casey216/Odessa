@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions.base import ConflictError
 from app.core.pagination import PaginatedResponse, paginate
-from app.core.utils import is_unique_violation
+from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.vehicle_model import VehicleModelCrud
 from app.models.user import User
 from app.models.vehicle_model import VehicleModel
@@ -51,10 +51,7 @@ class VehicleModelService:
         except IntegrityError as e:
             await db.rollback()
             if is_unique_violation(e):
-                raise ConflictError(
-                    f"Vehicle model '{data.name}' ({data.year}) already exists "
-                    "for this manufacturer."
-                ) from e
+                raise ConflictError(parse_unique_violation(e)) from e
             raise
 
     async def get(self, db: AsyncSession, id: UUID) -> VehicleModel | None:
@@ -96,10 +93,7 @@ class VehicleModelService:
         except IntegrityError as e:
             await db.rollback()
             if is_unique_violation(e):
-                raise ConflictError(
-                    f"Vehicle model '{data.name}' already exists "
-                    "for this manufacturer."
-                ) from e
+                raise ConflictError(parse_unique_violation(e)) from e
             raise
 
     async def delete(self, db: AsyncSession, id: UUID, soft: bool = True) -> None:

@@ -91,9 +91,9 @@ async def create_user(
     ],
     db: Annotated[AsyncSession, Depends(get_audited_db)],
 ):
-    user = await user_service.create(db, user_in, current_user)
+    await user_service.create(db, user_in, current_user)
     response = HTMLResponse(content="", status_code=status.HTTP_201_CREATED)
-    response.headers["HX-Redirect"] = f"/users/{user.id}"
+    response.headers["HX-Redirect"] = "/users"
     return response
 
 

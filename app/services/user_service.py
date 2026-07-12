@@ -42,7 +42,7 @@ class UserService:
         except IntegrityError as e:
             await db.rollback()
             if is_unique_violation(e):
-                raise ConflictError(f"Email '{data.email}' already exists.") from e
+                raise ConflictError(parse_unique_violation(e)) from e
             raise
 
     async def get(self, db: AsyncSession, id: UUID) -> User | None:

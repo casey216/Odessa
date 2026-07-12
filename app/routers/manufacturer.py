@@ -145,9 +145,9 @@ async def create_manufacturer(
         User, Depends(require_permission(PermissionCode.manufacturer_create))
     ],
 ):
-    manufacturer = await manufacturer_service.create(db, manufacturer_in, current_user)
+    await manufacturer_service.create(db, manufacturer_in, current_user)
     response = HTMLResponse(content="", status_code=status.HTTP_201_CREATED)
-    response.headers["HX-Redirect"] = f"/manufacturers/{manufacturer.id}"
+    response.headers["HX-Redirect"] = "/manufacturers"
     return response
 
 

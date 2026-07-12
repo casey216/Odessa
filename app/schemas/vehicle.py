@@ -54,7 +54,7 @@ class VehicleCreate(FormBaseModel):
     def normalize_vin(cls, value: str) -> str:
         return value.strip().upper()
 
-    @field_validator("purchase_price", mode="before")
+    @field_validator("purchase_price", "odometer_km", mode="before")
     @classmethod
     def strip_thousands_separators(cls, value: object) -> object:
         if isinstance(value, str):
