@@ -2,7 +2,7 @@ exclude: |
   (?x)^(
     .venv/|
     venv/|
-    seeds/|
+    app/seeds/|
     __pycache__/|
     .mypy_cache/|
     .pytest_cache/|
