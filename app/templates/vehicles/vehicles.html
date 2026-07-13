@@ -17,7 +17,7 @@
 </div>
 
 <!-- Filters -->
-<form class="filters-bar" hx-get="/vehicles" hx-target="#vehicle-table-body"
+<form id="vehicle-filters" class="filters-bar" hx-get="/vehicles" hx-target="#vehicle-list-content"
     hx-trigger="change from:select, keyup changed delay:300ms from:input">
     <div class="search-wrapper">
         <i class="fa-solid fa-search search-icon"></i>
@@ -52,35 +52,7 @@
         {% endfor %}
     </select>
 </form>
-
-{% if vehicles %}
-<div class="table-wrapper">
-    <table>
-        <thead>
-            <tr>
-                <th>VIN</th>
-                <th>Model</th>
-                <th>Plate</th>
-                <th>Status</th>
-                <th>Mileage</th>
-                <th>Tags</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="vehicle-table-body">
-            {% include "vehicles/vehicle_rows.html" %}
-        </tbody>
-    </table>
+<div id="vehicle-list-content">
+    {% include "vehicles/vehicle_list_content.html" %}
 </div>
-{% else %}
-<div class="card">
-    <div class="empty-state">
-        <i class="fa-solid fa-truck"></i>
-        <h3>No vehicles yet</h3>
-        <p>Add your first vehicle to get started.</p>
-        <a href="/vehicles/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-plus"></i> Add
-            Vehicle</a>
-    </div>
-</div>
-{% endif %}
 {% endblock %}

@@ -17,51 +17,20 @@
 </div>
 
 <!-- Filters -->
-<div class="filters-bar">
+<form id="manufacturer-filters" class="filters-bar" hx-get="/manufacturers" hx-target="#manufacturer-list-content"
+  hx-trigger="change from:select, keyup changed delay:300ms from:input">
   <div class="search-wrapper">
     <i class="fa-solid fa-search search-icon"></i>
-    <input type="text" class="search-input" placeholder="Search manufacturer" name="search" value="{{ search or '' }}"
-      hx-get="/manufacturers" hx-trigger="keyup changed delay:300ms" hx-target="#manufacturer-table-body">
+    <input type="text" class="search-input" placeholder="Search manufacturer" name="search" value="{{ search or '' }}">
   </div>
+  <select class="form-select" name="is_active" style="max-width:220px;">
+    <option value="">All manufacturers</option>
+    <option value="{{ true }}" {% if status_filter==true %}selected{% endif %}>Active</option>
+    <option value="{{ false }}" {% if status_filter==false %}selected{% endif %}>Inactive</option>
+  </select>
+</form>
 
-  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <a href="/manufacturers"
-      class="btn btn-sm {% if status_filter is none %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
-    <a href="/manufacturers?is_active=true"
-      class="btn btn-sm {% if status_filter == true %}btn-success{% else %}btn-secondary{% endif %}">Active</a>
-    <a href="/manufacturers?is_active=false"
-      class="btn btn-sm {% if status_filter == false %}btn-secondary{% else %}btn-secondary{% endif %}"
-      style="{% if status_filter == false %}background:var(--danger-bg);color:var(--danger);{% endif %}">Inactive</a>
-  </div>
-
-  <input type="hidden" name="status_filter" value="{{ status_filter if status_filter is not none else '' }}">
+<div id="manufacturer-list-content">
+  {% include "manufacturers/manufacturer_list_content.html" %}
 </div>
-
-{% if manufacturers %}
-<div class="table-wrapper">
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Status</th>
-        <th>Created</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="manufacturer-table-body">
-      {% include "manufacturers/manufacturer_rows.html" %}
-    </tbody>
-  </table>
-</div>
-{% else %}
-<div class="card">
-  <div class="empty-state">
-    <i class="fa-solid fa-industry"></i>
-    <h3>No manufacturers yet</h3>
-    <p>Add your first manufacturer to get started.</p>
-    <a href="/manufacturers/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-plus"></i> Add
-      Manufacturer</a>
-  </div>
-</div>
-{% endif %}
 {% endblock %}

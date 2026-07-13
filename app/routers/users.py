@@ -59,7 +59,7 @@ async def list_users(
     }
 
     if request.headers.get("HX-Request"):
-        return templates.TemplateResponse("users/user_rows.html", context)
+        return templates.TemplateResponse("users/user_list_content.html", context)
 
     return templates.TemplateResponse("users/users.html", context)
 

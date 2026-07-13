@@ -1,0 +1,65 @@
+{% macro render(pagination, container_id, filter_form, endpoint) %}
+<div class="pagination-bar" style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;">
+{% if pagination.pages > 1 %}
+<div style="display:flex;gap:8px;">
+    <div style="color:var(--text-secondary);font-size:13px;align-self: center;">
+        Showing {{ (pagination.page - 1) * pagination.page_size + 1 }} to
+        {% if pagination.page < pagination.pages %}
+        {{ pagination.page * pagination.page_size }}
+        {% else %}
+        {{ pagination.total }}
+        {% endif %} of {{
+        pagination.total }}
+    </div>
+    <div>
+        <select form="{{ filter_form }}" class="form-select" name="page_size" style="max-width:160px;" hx-get="{{ endpoint }}"
+            hx-target="#{{ container_id }}" hx-include="#{{ filter_form }}">
+            {% for size in [10, 25, 50, 100] %}
+            <option value="{{ size }}" {% if pagination.page_size==size %}selected{% endif %}>show {{ size }} records</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+    <div style="display:flex;gap:8px;">
+        <div style="color:var(--text-secondary);font-size:13px;align-self: center;">
+        Page {{ pagination.page }} of {{ pagination.pages }}
+        </div>
+        {% if pagination.links.prev %}
+        <a href="{{ pagination.links.prev }}" class="btn btn-sm btn-secondary">
+            <i class="fa-solid fa-chevron-left"></i> Prev
+        </a>
+        {% else %}
+        <a role="link" class="btn btn-sm btn-secondary" aria-disabled="true">
+            <i class="fa-solid fa-chevron-left"></i> Prev
+        </a>
+        {% endif %}
+
+        {% if pagination.links.next %}
+        <a href="{{ pagination.links.next }}" class="btn btn-sm btn-secondary">
+            <i class="fa-solid fa-chevron-right"></i> Next
+        </a>
+        {% else %}
+        <a role="link" class="btn btn-sm btn-secondary" aria-disabled="true">
+            <i class="fa-solid fa-chevron-right"></i> Next
+        </a>
+        {% endif %}
+    </div>
+{% else %}
+<div style="display:flex;gap:8px;">
+    <div style="color:var(--text-secondary);font-size:13px;align-self: center;">
+        Showing {{ (pagination.page - 1) * pagination.page_size + 1 }} to {{ pagination.total}} of {{ pagination.total }}
+    </div>
+    <div>
+        <select form="{{ filter_form }}" class="form-select" name="page_size" style="max-width:160px;"
+            hx-get="{{ endpoint }}" hx-target="#{{ container_id }}" hx-include="#{{ filter_form }}">
+            {% for size in [10, 25, 50, 100] %}
+            <option value="{{ size }}" {% if pagination.page_size==size %}selected{% endif %}>show {{ size }} records
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+</div>
+{% endif %}
+{% endmacro %}

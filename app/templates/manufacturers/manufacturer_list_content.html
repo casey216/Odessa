@@ -1,0 +1,30 @@
+{% import "shared/pagination.html" as pager %}
+{% if manufacturers %}
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="manufacturer-table-body">
+            {% include "manufacturers/manufacturer_rows.html" %}
+        </tbody>
+    </table>
+</div>
+{{ pager.render(pagination, "manufacturer-list-content", "manufacturer-filters", "/manufacturers") }}
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <i class="fa-solid fa-industry"></i>
+        <h3>No manufacturers yet</h3>
+        <p>Add your first manufacturer to get started.</p>
+        <a href="/manufacturers/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-plus"></i>
+            Add
+            Manufacturer</a>
+    </div>
+</div>
+{% endif %}

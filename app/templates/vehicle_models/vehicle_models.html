@@ -17,64 +17,29 @@
 </div>
 
 <!-- Filters -->
-<div class="filters-bar">
-  <div class="search-wrapper">
-    <i class="fa-solid fa-search search-icon"></i>
-    <input type="text" class="search-input" placeholder="Search model or manufacturer" name="search" value="{{ search or '' }}"
-      hx-get="/vehicle-models" hx-trigger="keyup changed delay:300ms" hx-target="#vehicle-model-table-body">
-  </div>
-
-  <select class="form-select" name="manufacturer_id" style="max-width:220px;"
-    hx-get="/vehicle-models" hx-trigger="change" hx-target="#vehicle-model-table-body">
-    <option value="">All manufacturers</option>
-    {% for manufacturer in manufacturers %}
-    <option value="{{ manufacturer.id }}" {% if manufacturer_filter == manufacturer.id %}selected{% endif %}>
-      {{ manufacturer.name }}
-    </option>
-    {% endfor %}
-  </select>
-
-  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <a href="/vehicle-models"
-      class="btn btn-sm {% if status_filter is none %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
-    <a href="/vehicle-models?is_active=true"
-      class="btn btn-sm {% if status_filter == true %}btn-success{% else %}btn-secondary{% endif %}">Active</a>
-    <a href="/vehicle-models?is_active=false"
-      class="btn btn-sm {% if status_filter == false %}btn-secondary{% else %}btn-secondary{% endif %}"
-      style="{% if status_filter == false %}background:var(--danger-bg);color:var(--danger);{% endif %}">Inactive</a>
-  </div>
-
-  <input type="hidden" name="status_filter" value="{{ status_filter if status_filter is not none else '' }}">
+<form id="vehicle-model-filter" class="filters-bar" hx-get="/vehicle-models", hx-target="#vehicle-model-list-content"
+hx-trigger="change from:select, keyup changed delay:300ms from:input">
+<div class="search-wrapper">
+  <i class="fa-solid fa-search search-icon"></i>
+  <input type="text" class="search-input" placeholder="Search model or manufacturer" name="search" value="{{ search or '' }}">
 </div>
+<select class="form-select" name="manufacturer_id" style="max-width:220px;">
+  <option value="">All manufacturers</option>
+  {% for manufacturer in manufacturers %}
+  <option value="{{ manufacturer.id }}" {% if manufacturer_filter==manufacturer.id %}selected{% endif %}>
+    {{ manufacturer.name }}
+  </option>
+  {% endfor %}
+</select>
+<select class="form-select" name="is_active" style="max-width:220px;">
+  <option value="">All Models</option>
+  <option value="{{ true }}" {% if status_filter==true %}selected{% endif %}>Active</option>
+  <option value="{{ false }}" {% if status_filter==false %}selected{% endif %}>Inactive</option>
+</select>
 
-{% if vehicle_models %}
-<div class="table-wrapper">
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Manufacturer</th>
-        <th>Year</th>
-        <th>Fuel</th>
-        <th>Transmission</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="vehicle-model-table-body">
-      {% include "vehicle_models/vehicle_model_rows.html" %}
-    </tbody>
-  </table>
+</form>
+
+<div id="vehicle-model-list-content">
+  {% include "vehicle_models/vehicle_model_list_content.html" %}
 </div>
-{% else %}
-<div class="card">
-  <div class="empty-state">
-    <i class="fa-solid fa-car"></i>
-    <h3>No vehicle models yet</h3>
-    <p>Add your first vehicle model to get started.</p>
-    <a href="/models/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-plus"></i> Add
-      Vehicle Model</a>
-  </div>
-</div>
-{% endif %}
 {% endblock %}

@@ -1,0 +1,39 @@
+{% import "shared/pagination.html" as pager %}
+{% set role_colors = {
+'admin': 'badge-error',
+'fleet_manager': 'badge-warning',
+'maintenance_manager': 'badge-success',
+'driver': 'badge-info',
+'viewer': 'badge-ghost',
+} %}
+
+{% if users %}
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="user-table-body">
+            {% include "users/user_rows.html" %}
+        </tbody>
+    </table>
+</div>
+{{ pager.render(pagination, "user-list-content", "user-filters", "/users") }}
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <i class="fa-solid fa-users"></i>
+        <h3>No users found</h3>
+        <a href="/users/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-user-plus"></i> Add
+            User</a>
+    </div>
+</div>
+{% endif %}

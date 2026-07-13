@@ -64,7 +64,7 @@ async def list_manufacturers(
 
     if request.headers.get("HX-Request"):
         return templates.TemplateResponse(
-            "manufacturers/manufacturer_rows.html", context
+            "manufacturers/manufacturer_list_content.html", context
         )
 
     return templates.TemplateResponse("manufacturers/manufacturers.html", context)

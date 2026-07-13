@@ -81,7 +81,7 @@ async def list_vehicle_models(
 
     if request.headers.get("HX-Request"):
         return templates.TemplateResponse(
-            "vehicle_models/vehicle_model_rows.html", context
+            "vehicle_models/vehicle_model_list_content.html", context
         )
 
     return templates.TemplateResponse("vehicle_models/vehicle_models.html", context)

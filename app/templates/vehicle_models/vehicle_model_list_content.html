@@ -1,0 +1,32 @@
+{% import "shared/pagination.html" as pager %}
+{% if vehicle_models %}
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Manufacturer</th>
+                <th>Year</th>
+                <th>Fuel</th>
+                <th>Transmission</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="vehicle-model-table-body">
+            {% include "vehicle_models/vehicle_model_rows.html" %}
+        </tbody>
+    </table>
+</div>
+{{ pager.render(pagination, "vehicle-model-list-content", "vehicle-model-filter", "/vehicle-models") }}
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <i class="fa-solid fa-car"></i>
+        <h3>No vehicle models yet</h3>
+        <p>Add your first vehicle model to get started.</p>
+        <a href="/models/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-plus"></i> Add
+            Vehicle Model</a>
+    </div>
+</div>
+{% endif %}
