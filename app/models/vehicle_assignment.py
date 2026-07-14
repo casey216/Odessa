@@ -62,6 +62,15 @@ class VehicleAssignment(Base):
             "OR odometer_in_km >= odometer_out_km",
             name="ck_vehicle_assignments_odometer_in_gte_out",
         ),
+        CheckConstraint(
+            "assignment_type = 'DRIVER' OR "
+            "(odometer_out_km IS NULL AND odometer_in_km IS NULL)",
+            name="ck_vehicle_assignments_odometer_only_for_drivers",
+        ),
+        CheckConstraint(
+            "assignment_type <> 'DRIVER' OR odometer_out_km IS NOT NULL",
+            name="ck_vehicle_assignments_odometer_out_not_null_for_drivers",
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(SAUUID, primary_key=True, default=uuid7)
