@@ -24,6 +24,11 @@ class PermissionCode(StrEnum):
     vehicle_update = "vehicle:update"
     vehicle_delete = "vehicle:delete"
 
+    vehicle_assignment_create = "vehicle_assignment:create"
+    vehicle_assignment_read = "vehicle_assignment:read"
+    vehicle_assignment_update = "vehicle_assignment:update"
+    vehicle_assignment_delete = "vehicle_assignment:delete"
+
     activity_read = "activity:read"
 
     permission_grant = "permission:grant"

@@ -12,25 +12,47 @@ from app.models.permission import PermissionEffect
 DEFAULT_ROLE_PERMISSIONS: dict[UserRole, set[PermissionCode]] = {
     UserRole.admin: set(PermissionCode),
     UserRole.fleet_manager: {
+        # Users
+        PermissionCode.user_read,
+        # Vehicle manufacturers
         PermissionCode.manufacturer_create,
         PermissionCode.manufacturer_read,
         PermissionCode.manufacturer_update,
-        PermissionCode.user_read,
-        PermissionCode.user_update,
+        PermissionCode.manufacturer_delete,
+        # Vehicle models
+        PermissionCode.vehicle_model_create,
+        PermissionCode.vehicle_model_read,
+        PermissionCode.vehicle_model_update,
+        PermissionCode.vehicle_model_delete,
+        # Vehicles
+        PermissionCode.vehicle_create,
+        PermissionCode.vehicle_read,
+        PermissionCode.vehicle_update,
+        PermissionCode.vehicle_delete,
+        # Assignments
+        PermissionCode.vehicle_assignment_create,
+        PermissionCode.vehicle_assignment_read,
+        PermissionCode.vehicle_assignment_update,
+        PermissionCode.vehicle_assignment_delete,
+        PermissionCode.activity_read,
     },
     UserRole.maintenance_manager: {
-        PermissionCode.manufacturer_read,
         PermissionCode.user_read,
-        PermissionCode.user_update,
+        PermissionCode.vehicle_read,
+        PermissionCode.vehicle_assignment_read,
+        PermissionCode.activity_read,
     },
     UserRole.driver: {
-        PermissionCode.user_read,
-        PermissionCode.user_update,
+        PermissionCode.vehicle_read,
+        PermissionCode.vehicle_assignment_read,
     },
     UserRole.viewer: {
-        PermissionCode.manufacturer_read,
         PermissionCode.user_read,
-        PermissionCode.user_update,
+        PermissionCode.manufacturer_read,
+        PermissionCode.vehicle_model_read,
+        PermissionCode.vehicle_read,
+        PermissionCode.vehicle_assignment_read,
+        PermissionCode.activity_read,
     },
 }
 
