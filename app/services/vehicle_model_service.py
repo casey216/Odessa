@@ -1,4 +1,3 @@
-from datetime import datetime, time, timedelta
 from uuid import UUID
 
 from fastapi import Request
@@ -14,16 +13,26 @@ from app.models.vehicle_model import VehicleModel
 from app.schemas.base import QueryParams
 from app.schemas.vehicle_model import (
     VehicleModelCreate,
-    VehicleModelFilter,
     VehicleModelOut,
     VehicleModelUpdate,
 )
+from app.services.base import BaseService
 from app.services.manufacturer_service import manufacturer_service
 
 
-class VehicleModelService:
+class VehicleModelService(BaseService[VehicleModelCrud]):
     crud = VehicleModelCrud()
     out_schema = VehicleModelOut
+    FILTER_FIELDS = {
+        "is_active",
+        "manufacturer_id",
+        "fuel_type",
+        "transmission",
+        "created_by",
+    }
+    DATE_FIELDS = [
+        ("created_from", "created_to", "created_at"),
+    ]
 
     async def create(
         self, db: AsyncSession, data: VehicleModelCreate, current_user: User
@@ -115,46 +124,6 @@ class VehicleModelService:
             instance.is_active = is_active
             await db.commit()
         return instance
-
-    @classmethod
-    def _build_post_filters(cls, params: VehicleModelFilter) -> dict:
-        filters = {}
-
-        if search := params.search:
-            if len(search) >= 2:
-                filters.update(cls.crud._build_q_filters(search))
-
-        if params.is_active is not None:
-            filters["is_active"] = params.is_active
-
-        if params.manufacturer_id is not None:
-            filters["manufacturer_id"] = params.manufacturer_id
-
-        if params.fuel_type is not None:
-            filters["fuel_type"] = params.fuel_type
-
-        if params.transmission is not None:
-            filters["transmission"] = params.transmission
-
-        if params.created_by is not None:
-            filters["created_by"] = params.created_by
-
-        if params.created_from is not None:
-            filters["created_at__gte"] = datetime.combine(
-                params.created_from,
-                time.min,
-            )
-
-        if params.created_to is not None:
-            filters["created_at__lt"] = datetime.combine(
-                params.created_to + timedelta(days=1),
-                time.min,
-            )
-
-        if params.include_deleted:
-            filters["include_deleted"] = True
-
-        return filters
 
 
 vehicle_model_service = VehicleModelService()

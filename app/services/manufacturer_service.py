@@ -1,4 +1,3 @@
-from datetime import datetime, time, timedelta
 from uuid import UUID
 
 from fastapi import Request
@@ -14,15 +13,20 @@ from app.models.user import User
 from app.schemas.base import QueryParams
 from app.schemas.manufacturer import (
     ManufacturerCreate,
-    ManufacturerFilter,
     ManufacturerOut,
     ManufacturerUpdate,
 )
+from app.services.base import BaseService
 
 
-class ManufacturerService:
+class ManufacturerService(BaseService[ManufacturerCrud]):
     crud = ManufacturerCrud()
     out_schema = ManufacturerOut
+    FILTER_FIELDS = {
+        "is_active",
+        "created_by",
+    }
+    DATE_FIELDS = [("created_from", "created_to", "created_at")]
 
     async def create(
         self, db: AsyncSession, data: ManufacturerCreate, current_user: User
@@ -97,37 +101,6 @@ class ManufacturerService:
             await db.commit()
             await db.refresh(instance)
         return instance
-
-    @classmethod
-    def _build_post_filters(cls, params: ManufacturerFilter) -> dict:
-        filters = {}
-
-        if search := params.search:
-            if len(search) >= 2:
-                filters.update(cls.crud._build_q_filters(search))
-
-        if params.is_active is not None:
-            filters["is_active"] = params.is_active
-
-        if params.created_by is not None:
-            filters["created_by"] = params.created_by
-
-        if params.min_date is not None:
-            filters["created_at__gte"] = datetime.combine(
-                params.min_date,
-                time.min,
-            )
-
-        if params.max_date is not None:
-            filters["created_at__lt"] = datetime.combine(
-                params.max_date + timedelta(days=1),
-                time.min,
-            )
-
-        if params.include_deleted:
-            filters["include_deleted"] = True
-
-        return filters
 
 
 manufacturer_service = ManufacturerService()
