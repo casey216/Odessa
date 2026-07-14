@@ -38,7 +38,7 @@ class DriverAssignmentCreate(FormBaseModel):
 class FleetManagerAssignmentCreate(FormBaseModel):
     vehicle_id: UUID
     user_id: UUID
-    assignment_type: AssignmentType
+    assignment_type: AssignmentType = AssignmentType.FLEET_MANAGER
     notes: str | None = Field(default=None, max_length=NOTES_MAX_LENGTH)
 
 
@@ -64,6 +64,8 @@ class VehicleAssignmentOut(BaseModel):
     vehicle_id: UUID
     user_id: UUID
     assignment_type: AssignmentType
+    odometer_out_km: int | None
+    odometer_in_km: int | None
     status: AssignmentStatus
     assigned_at: datetime
     unassigned_at: datetime | None
