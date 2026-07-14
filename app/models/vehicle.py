@@ -92,15 +92,21 @@ class Vehicle(Base):
     created_by: Mapped[UUID | None] = mapped_column(SAUUID, ForeignKey("users.id"))
     updated_by: Mapped[UUID | None] = mapped_column(SAUUID, ForeignKey("users.id"))
 
+    # Relationships
     vehicle_model: Mapped["VehicleModel"] = relationship(
         foreign_keys=[vehicle_model_id], back_populates="vehicles"
     )
-    created_by_user: Mapped["User | None"] = relationship(foreign_keys=[created_by])
-    updated_by_user: Mapped["User | None"] = relationship(foreign_keys=[updated_by])
-
     tags: Mapped[list["Tag"]] = relationship(
         secondary=vehicle_tags, back_populates="vehicles"
     )
+    assignments = relationship(
+        "VehicleAssignment",
+        back_populates="vehicle",
+        foreign_keys="VehicleAssignment.vehicle_id",
+    )
+
+    created_by_user: Mapped["User | None"] = relationship(foreign_keys=[created_by])
+    updated_by_user: Mapped["User | None"] = relationship(foreign_keys=[updated_by])
 
     def __repr__(self) -> str:
         return f"<Vehicle id={self.id} vin={self.vin!r} status={self.status}>"

@@ -6,7 +6,8 @@ from app.core.exceptions import InsufficientPermissionError, PermissionNotFoundE
 from app.core.permissions import PermissionCode
 from app.crud.permission import PermissionCrud
 from app.crud.user_permission import UserPermissionCrud
-from app.models import PermissionEffect, User, UserPermission, UserRole
+from app.models import User, UserPermission, UserRole
+from app.models.permission import PermissionEffect
 
 DEFAULT_ROLE_PERMISSIONS: dict[UserRole, set[PermissionCode]] = {
     UserRole.admin: set(PermissionCode),
