@@ -10,7 +10,7 @@ from app.core.pagination import PaginatedResponse, paginate
 from app.core.security import get_password_hash
 from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.user import UserCrud
-from app.models.user import User
+from app.models import User, VehicleAssignment
 from app.policies.user_policy import UserPolicy
 from app.schemas.base import QueryParams
 from app.schemas.user import UserCreate, UserFilter, UserOut, UserUpdate
@@ -20,9 +20,7 @@ class UserService:
     crud = UserCrud()
     out_schema = UserOut
 
-    async def create(
-        self, db: AsyncSession, data: UserCreate, current_user: User
-    ) -> User:
+    async def create(self, db: AsyncSession, data: UserCreate, current_user: User) -> User:
         existing = await self.crud.get_by_email(db, email=data.email)
         if existing is not None:
             raise ConflictError(f"Email '{data.email}' already exists.")
@@ -86,6 +84,14 @@ class UserService:
             raise
 
     async def delete(self, db: AsyncSession, id: UUID, soft: bool = True) -> None:
+        if await self.crud.has_children(
+            db,
+            fk_column=VehicleAssignment.vehicle_id,
+            parent_id=id,
+        ):
+            raise ConflictError(
+                "Cannot delete user because it has vehicle assignments. Set inactive instead."
+            )
         if soft:
             await self.crud.soft_delete(db, id)
         else:
@@ -98,9 +104,7 @@ class UserService:
     async def count(self, db: AsyncSession, id: UUID) -> int:
         return await self.crud.count(db)
 
-    async def set_active_status(
-        self, db: AsyncSession, id: UUID, is_active: bool
-    ) -> User:
+    async def set_active_status(self, db: AsyncSession, id: UUID, is_active: bool) -> User:
         instance = await self.crud.get_or_404(db, id)
         if instance.is_active != is_active:
             instance.is_active = is_active

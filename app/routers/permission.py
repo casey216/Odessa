@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_db, require_permission
 from app.core.permissions import PermissionCode
-from app.models import PermissionEffect, User
+from app.models import User
+from app.models.permission import PermissionEffect
 from app.services.permission_service import permission_service
 
 router = APIRouter(prefix="/users/{user_id}/permissions", tags=["permissions"])
@@ -48,6 +49,4 @@ async def revoke_permission(
     db: AsyncSession = Depends(get_db),
     _current_user: User = Depends(require_permission(PermissionCode.permission_revoke)),
 ) -> None:
-    await permission_service.revoke_permission_override(
-        db, user_id, body.permission_code
-    )
+    await permission_service.revoke_permission_override(db, user_id, body.permission_code)

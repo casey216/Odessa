@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Assign Driver — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/vehicle-assignments">Vehicle Assignments</a>
+    <span class="sep">/</span>
+    <span class="current">Assign Driver</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Assign Driver</h1>
+        <p class="page-subtitle">Assign a driver to a vehicle</p>
+    </div>
+</div>
+
+<div class="card" style="max-width:560px;">
+    <form hx-post="/vehicle-assignments/drivers" hx-swap="none">
+
+        <h3
+            style="font-size:14px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <i class="fa-solid fa-id-card" style="margin-right:8px;color:var(--accent)"></i>Driver Assignment
+        </h3>
+
+        <div class="form-group">
+            <label class="form-label">Vehicle *</label>
+            <select name="vehicle_id" id="vehicle-select" class="form-select" required>
+                <option value="" disabled selected>Select vehicle</option>
+                {% for vehicle in vehicles %}
+                <option value="{{ vehicle.id }}" data-odometer="{{ vehicle.odometer_km }}">
+                    {{ vehicle.vin }}{% if vehicle.license_plate %} — {{ vehicle.license_plate }}{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Driver *</label>
+            <select name="user_id" class="form-select" required>
+                <option value="" disabled selected>Select driver</option>
+                {% for driver in drivers %}
+                <option value="{{ driver.id }}">{{ driver.full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">
+                Odometer Out (km)
+                <span id="current-odometer-label" style="font-weight:normal;color:var(--text-tertiary);">
+                    — current odometer: <span id="current-odometer-value">select a vehicle</span>
+                </span>
+            </label>
+            <input type="text" inputmode="numeric" name="odometer_out_km" id="odometer-out-input"
+                class="form-input thousands" placeholder="e.g. 12,500" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-input" rows="3" placeholder="Optional notes"></textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+            <a href="/vehicle-assignments" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-id-card"></i> Assign Driver
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        const vehicleSelect = document.getElementById('vehicle-select');
+        const currentOdometerValue = document.getElementById('current-odometer-value');
+        const odometerOutInput = document.getElementById('odometer-out-input');
+
+        function formatKm(raw) {
+            const n = Number(raw);
+            return Number.isFinite(n) ? n.toLocaleString() : raw;
+        }
+
+        vehicleSelect.addEventListener('change', () => {
+            const selected = vehicleSelect.options[vehicleSelect.selectedIndex];
+            const odometer = selected ? selected.dataset.odometer : undefined;
+
+            if (odometer === undefined || odometer === '') {
+                currentOdometerValue.textContent = 'select a vehicle';
+                odometerOutInput.value = '';
+                return;
+            }
+
+            const formatted = formatKm(odometer);
+            currentOdometerValue.textContent = formatted + ' km';
+            odometerOutInput.value = formatted;
+            odometerOutInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+    })();
+</script>
+{% endblock %}

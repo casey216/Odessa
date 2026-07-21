@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Assign Fleet Manager — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/vehicle-assignments">Vehicle Assignments</a>
+    <span class="sep">/</span>
+    <span class="current">Assign Fleet Manager</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Assign Fleet Manager</h1>
+        <p class="page-subtitle">Assign a fleet manager to a vehicle</p>
+    </div>
+</div>
+
+<div class="card" style="max-width:560px;">
+    <form hx-post="/vehicle-assignments/fleet-managers" hx-swap="none">
+
+        <h3
+            style="font-size:14px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <i class="fa-solid fa-user-tie" style="margin-right:8px;color:var(--accent)"></i>Fleet Manager Assignment
+        </h3>
+
+        <div class="form-group">
+            <label class="form-label">Vehicle *</label>
+            <select name="vehicle_id" class="form-select" required>
+                <option value="" disabled selected>Select vehicle</option>
+                {% for vehicle in vehicles %}
+                <option value="{{ vehicle.id }}">
+                    {{ vehicle.vin }}{% if vehicle.license_plate %} — {{ vehicle.license_plate }}{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Fleet Manager *</label>
+            <select name="user_id" class="form-select" required>
+                <option value="" disabled selected>Select fleet manager</option>
+                {% for manager in fleet_managers %}
+                <option value="{{ manager.id }}">{{ manager.full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-input" rows="3" placeholder="Optional notes"></textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+            <a href="/vehicle-assignments" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-user-tie"></i> Assign Fleet Manager
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

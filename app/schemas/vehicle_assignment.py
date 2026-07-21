@@ -31,7 +31,7 @@ class DriverAssignmentCreate(FormBaseModel):
     vehicle_id: UUID
     user_id: UUID
     assignment_type: AssignmentType = AssignmentType.DRIVER
-    odometer_out_km: int = Field(default=0, ge=0)
+    odometer_out_km: int = Field(ge=0)
     notes: str | None = Field(default=None, max_length=NOTES_MAX_LENGTH)
 
 
@@ -48,14 +48,12 @@ class VehicleAssignmentUpdate(FormBaseModel):
     notes: str | None = Field(default=None, max_length=NOTES_MAX_LENGTH)
 
 
-class DriverAssignmentClose(BaseModel):
-    status: Literal[AssignmentStatus.COMPLETED, AssignmentStatus.CANCELLED]
+class DriverAssignmentComplete(BaseModel):
     odometer_in_km: int = Field(ge=0)
     notes: str | None = None
 
 
-class FleetManagerAssignmentClose(BaseModel):
-    status: Literal[AssignmentStatus.COMPLETED, AssignmentStatus.CANCELLED]
+class FleetManagerAssignmentComplete(BaseModel):
     notes: str | None = None
 
 
@@ -64,13 +62,13 @@ class VehicleAssignmentOut(BaseModel):
     vehicle_id: UUID
     user_id: UUID
     assignment_type: AssignmentType
-    odometer_out_km: int | None
-    odometer_in_km: int | None
     status: AssignmentStatus
     assigned_at: datetime
     unassigned_at: datetime | None
     assigned_by: UUID | None
     unassigned_by: UUID | None
+    odometer_out_km: int | None = None
+    odometer_in_km: int | None = None
     notes: str | None
     vehicle: VehicleRef
     assigned_to_user: UserRef | None
@@ -109,10 +107,6 @@ class VehicleAssignmentFilter(FormBaseModel):
 
     @model_validator(mode="after")
     def validate_date_range(self) -> Self:
-        if (
-            self.assigned_from
-            and self.assigned_to
-            and self.assigned_from > self.assigned_to
-        ):
+        if self.assigned_from and self.assigned_to and self.assigned_from > self.assigned_to:
             raise DateFilterError("assigned_at")
         return self

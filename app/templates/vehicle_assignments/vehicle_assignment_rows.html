@@ -1,0 +1,66 @@
+{% set status_badge = {
+'active': 'badge-info',
+'completed': 'badge-success',
+'cancelled': 'badge-ghost',
+} %}
+{% set type_badge = {
+'driver': 'badge-info',
+'fleet_manager': 'badge-warning',
+} %}
+{% for assignment in assignments %}
+<tr id="vehicle-assignment-row-{{ assignment.id }}">
+    <td>
+        <a href="/vehicles/{{ assignment.vehicle.id }}"
+            style="color:var(--text-primary);text-decoration:none;font-weight:500;">
+            {{ assignment.vehicle.vin }}
+        </a>
+        {% if assignment.vehicle.license_plate %}
+        <span style="color:var(--text-tertiary);"> ({{ assignment.vehicle.license_plate }})</span>
+        {% endif %}
+    </td>
+    <td style="color:var(--text-secondary);">
+        {{ assignment.assigned_to_user.full_name if assignment.assigned_to_user else '—' }}
+    </td>
+    <td>
+        <span class="badge {{ type_badge.get(assignment.assignment_type.value, 'badge-ghost') }}">
+            {{ assignment.assignment_type.value | replace('_', ' ') | capitalize }}
+        </span>
+    </td>
+    <td>
+        <span class="badge {{ status_badge.get(assignment.status.value, 'badge-ghost') }}">
+            {{ assignment.status.value | capitalize }}
+        </span>
+    </td>
+    <td style="color:var(--text-secondary);white-space:nowrap;">
+        {{ assignment.assigned_at | fmt_date }}
+        {% if assignment.unassigned_at %}
+        <span style="color:var(--text-tertiary);"> — {{ assignment.unassigned_at | fmt_date }}</span>
+        {% endif %}
+    </td>
+    <td style="color:var(--text-secondary);white-space:nowrap;">
+        {{ assignment.odometer_out_km | km if assignment.odometer_out_km is not none else '—' }}
+        {% if assignment.odometer_in_km is not none %}
+        <span style="color:var(--text-tertiary);"> → {{ assignment.odometer_in_km | km }}</span>
+        {% endif %}
+    </td>
+    <td>
+        <div style="display:flex;gap:6px;">
+            <a href="/vehicle-assignments/{{ assignment.id }}" class="btn btn-sm btn-secondary btn-icon"
+                data-tooltip="View">
+                <i class="fa-solid fa-eye"></i>
+            </a>
+            {% if assignment.status.value == 'active' %}
+            <a href="/vehicle-assignments/{{ assignment.id }}/edit" class="btn btn-sm btn-secondary btn-icon"
+                data-tooltip="Edit">
+                <i class="fa-solid fa-pen"></i>
+            </a>
+            {% endif %}
+            <button class="btn btn-sm btn-danger btn-icon" data-tooltip="Delete"
+                hx-delete="/vehicle-assignments/{{ assignment.id }}" hx-confirm="Delete this assignment?"
+                hx-on::before-swap="redirect('/vehicle-assignments', event)">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+    </td>
+</tr>
+{% endfor %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Vehicle Assignments — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <span class="current"><i class="fa-solid fa-clipboard-user" style="margin-right:6px"></i>Vehicle Assignments</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Vehicle Assignments</h1>
+        <p class="page-subtitle">{{ pagination["total"] }} assignment{{ 's' if pagination["total"] != 1 }}</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="/vehicle-assignments/drivers/new" class="btn btn-secondary">
+            <i class="fa-solid fa-id-card"></i> Assign Driver
+        </a>
+        <a href="/vehicle-assignments/fleet-managers/new" class="btn btn-primary">
+            <i class="fa-solid fa-user-tie"></i> Assign Fleet Manager
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<form id="vehicle-assignment-filters" class="filters-bar" hx-get="/vehicle-assignments"
+    hx-target="#vehicle-assignment-list-content" hx-trigger="change from:select, keyup changed delay:300ms from:input">
+    <div class="search-wrapper">
+        <i class="fa-solid fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Search VIN or notes" name="search"
+            value="{{ search or '' }}">
+    </div>
+
+    <select class="form-select" name="assignment_type" style="max-width:180px;">
+        <option value="">All types</option>
+        {% for t in assignment_types %}
+        <option value="{{ t.value }}" {% if assignment_type_filter==t %}selected{% endif %}>
+            {{ t.value | replace('_', ' ') | capitalize }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <select class="form-select" name="status" style="max-width:180px;">
+        <option value="">All statuses</option>
+        {% for s in statuses %}
+        <option value="{{ s.value }}" {% if status_filter==s %}selected{% endif %}>
+            {{ s.value | replace('_', ' ') | capitalize }}
+        </option>
+        {% endfor %}
+    </select>
+</form>
+<div id="vehicle-assignment-list-content">
+    {% include "vehicle_assignments/vehicle_assignment_list_content.html" %}
+</div>
+{% endblock %}

@@ -19,17 +19,20 @@
       <a href="/manufacturers/{{ manufacturer.id }}" class="btn btn-sm btn-secondary btn-icon" data-tooltip="View">
         <i class="fa-solid fa-eye"></i>
       </a>
-      <a hx-get="/manufacturers/{{ manufacturer.id }}/edit" class="btn btn-sm btn-secondary btn-icon" data-tooltip="Edit">
+      <a href="/manufacturers/{{ manufacturer.id }}/edit" class="btn btn-sm btn-secondary btn-icon" data-tooltip="Edit">
         <i class="fa-solid fa-pen"></i>
       </a>
       <button type="button" class="btn btn-sm btn-secondary btn-icon"
         data-tooltip="{{ 'Deactivate' if manufacturer.is_active else 'Activate' }}"
         hx-post="/manufacturers/{{ manufacturer.id }}/{{ 'deactivate' if manufacturer.is_active else 'activate' }}"
-        hx-target="closest tr" hx-swap="outerHTML">
+        hx-target="closest tr"
+        hx-swap="outerHTML">
         <i class="fa-solid fa-{{ 'toggle-off' if manufacturer.is_active else 'toggle-on' }}"></i>
       </button>
-      <button class="btn btn-sm btn-danger btn-icon" data-tooltip="Delete" hx-delete="/manufacturers/{{ manufacturer.id }}"
-        hx-confirm="Delete {{ manufacturer.name }}?" hx-target="closest tr" hx-swap="delete">
+      <button class="btn btn-sm btn-danger btn-icon" data-tooltip="Delete"
+        hx-delete="/manufacturers/{{ manufacturer.id }}"
+        hx-confirm="Delete {{ manufacturer.name }}?"
+        hx-on::before-swap="redirect('/manufacturers', event)">
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>

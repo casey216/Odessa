@@ -1,0 +1,38 @@
+{% import "shared/pagination.html" as pager %}
+{% if assignments %}
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Vehicle</th>
+                <th>Assigned To</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Assigned</th>
+                <th>Odometer</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="vehicle-assignment-table-body">
+            {% include "vehicle_assignments/vehicle_assignment_rows.html" %}
+        </tbody>
+    </table>
+</div>
+{{ pager.render(pagination, "vehicle-assignment-list-content", "vehicle-assignment-filters", "/vehicle-assignments") }}
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <i class="fa-solid fa-clipboard-user"></i>
+        <h3>No assignments yet</h3>
+        <p>Assign a driver or fleet manager to a vehicle to get started.</p>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:16px">
+            <a href="/vehicle-assignments/drivers/new" class="btn btn-secondary">
+                <i class="fa-solid fa-id-card"></i> Assign Driver
+            </a>
+            <a href="/vehicle-assignments/fleet-managers/new" class="btn btn-primary">
+                <i class="fa-solid fa-user-tie"></i> Assign Fleet Manager
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}

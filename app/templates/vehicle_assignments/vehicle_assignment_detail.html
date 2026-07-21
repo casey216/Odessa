@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% set status_badge = {
+'active': 'badge-info',
+'completed': 'badge-success',
+'cancelled': 'badge-ghost',
+} %}
+{% block title %}{{ assignment.vehicle.vin }} Assignment — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/vehicle-assignments">Vehicle Assignments</a>
+    <span class="sep">/</span>
+    <span class="current">{{ assignment.vehicle.vin }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display:flex;align-items:center;gap:16px;">
+        <div
+            style="width:52px;height:52px;background:var(--accent-subtle);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--accent);">
+            <i class="fa-solid fa-{{ 'id-card' if assignment.assignment_type.value == 'driver' else 'user-tie' }}"></i>
+        </div>
+        <div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <h1 class="page-title">{{ assignment.assignment_type.value | replace('_', ' ') | capitalize }}
+                    Assignment</h1>
+                <span class="badge {{ status_badge.get(assignment.status.value, 'badge-ghost') }}">
+                    {{ assignment.status.value | capitalize }}
+                </span>
+            </div>
+            <p class="page-subtitle">
+                <a href="/vehicles/{{ assignment.vehicle.id }}">{{ assignment.vehicle.vin }}</a>
+                &nbsp;&middot;&nbsp;
+                {{ assignment.assigned_to_user.full_name if assignment.assigned_to_user else '—' }}
+            </p>
+        </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        {% if assignment.status.value == 'active' %}
+        <a href="/vehicle-assignments/{{ assignment.id }}/edit" class="btn btn-secondary"><i
+                class="fa-solid fa-pen"></i> Edit</a>
+        {% endif %}
+        <button type="button" class="btn btn-danger" hx-delete="/vehicle-assignments/{{ assignment.id }}"
+            hx-confirm="Delete this assignment?" hx-on::before-swap="redirect('/vehicle-assignments', event)">
+            <i class="fa-solid fa-trash"></i> Delete
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">Vehicle</div>
+            <div class="info-value">
+                <a href="/vehicles/{{ assignment.vehicle.id }}">
+                    {{ assignment.vehicle.vin }}{% if assignment.vehicle.license_plate %} ({{
+                    assignment.vehicle.license_plate }}){% endif %}
+                </a>
+            </div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Assigned To</div>
+            <div class="info-value">{{ assignment.assigned_to_user.full_name if assignment.assigned_to_user else '—' }}
+            </div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Type</div>
+            <div class="info-value">{{ assignment.assignment_type.value | replace('_', ' ') | capitalize }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Status</div>
+            <div class="info-value">{{ assignment.status.value | capitalize }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Assigned At</div>
+            <div class="info-value">{{ assignment.assigned_at | fmt_date }}</div>
+        </div>
+        {% if assignment.unassigned_at %}
+        <div class="info-item">
+            <div class="info-label">Unassigned At</div>
+            <div class="info-value">{{ assignment.unassigned_at | fmt_date }}</div>
+        </div>
+        {% endif %}
+        {% if assignment.assignment_type.value == 'driver' %}
+        <div class="info-item">
+            <div class="info-label">Odometer Out</div>
+            <div class="info-value">{{ assignment.odometer_out_km | km if assignment.odometer_out_km is not none else
+                '—' }}</div>
+        </div>
+        {% if assignment.odometer_in_km is not none %}
+        <div class="info-item">
+            <div class="info-label">Odometer In</div>
+            <div class="info-value">{{ assignment.odometer_in_km | km }}</div>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if assignment.notes %}
+        <div class="info-item" style="grid-column:1 / -1;">
+            <div class="info-label">Notes</div>
+            <div class="info-value">{{ assignment.notes }}</div>
+        </div>
+        {% endif %}
+        <div class="info-item">
+            <div class="info-label">Created</div>
+            <div class="info-value">{{ assignment.created_at | fmt_date }}</div>
+        </div>
+        {% if assignment.updated_at %}
+        <div class="info-item">
+            <div class="info-label">Last Updated</div>
+            <div class="info-value">{{ assignment.updated_at | fmt_date }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if assignment.status.value == 'active' %}
+<div class="card" style="max-width:480px;margin-top:20px;">
+    <h3
+        style="font-size:14px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <i class="fa-solid fa-flag-checkered" style="margin-right:8px;color:var(--accent)"></i>Close Assignment
+    </h3>
+    <form {% if assignment.assignment_type.value=='driver' %}
+        hx-post="/vehicle-assignments/{{ assignment.id }}/drivers/close" {% else %}
+        hx-post="/vehicle-assignments/{{ assignment.id }}/fleet-managers/close" {% endif %}
+        hx-on::before-swap="redirect('/vehicle-assignments/{{ assignment.id }}', event)">
+
+        <div class="form-group">
+            <label class="form-label">Outcome *</label>
+            <div style="display:flex;gap:16px;">
+                <label style="display:flex;align-items:center;gap:6px;font-weight:normal;">
+                    <input type="radio" name="status" value="completed" checked> Completed
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;font-weight:normal;">
+                    <input type="radio" name="status" value="cancelled"> Cancelled
+                </label>
+            </div>
+        </div>
+
+        {% if assignment.assignment_type.value == 'driver' %}
+        <div class="form-group">
+            <label class="form-label">Odometer In (km) *</label>
+            <input type="text" inputmode="numeric" name="odometer_in_km" class="form-input thousands"
+                placeholder="e.g. 18,500" required>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-input" rows="3" placeholder="Optional closing notes"></textarea>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-flag-checkered"></i> Close Assignment
+            </button>
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

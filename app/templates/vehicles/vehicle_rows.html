@@ -35,7 +35,7 @@
             <a href="/vehicles/{{ vehicle.id }}" class="btn btn-sm btn-secondary btn-icon" data-tooltip="View">
                 <i class="fa-solid fa-eye"></i>
             </a>
-            <a hx-get="/vehicles/{{ vehicle.id }}/edit" class="btn btn-sm btn-secondary btn-icon" data-tooltip="Edit">
+            <a href="/vehicles/{{ vehicle.id }}/edit" class="btn btn-sm btn-secondary btn-icon" data-tooltip="Edit">
                 <i class="fa-solid fa-pen"></i>
             </a>
             <button type="button" class="btn btn-sm btn-secondary btn-icon"
@@ -45,7 +45,7 @@
                 <i class="fa-solid fa-{{ 'toggle-off' if vehicle.is_active else 'toggle-on' }}"></i>
             </button>
             <button class="btn btn-sm btn-danger btn-icon" data-tooltip="Delete" hx-delete="/vehicles/{{ vehicle.id }}"
-                hx-confirm="Delete {{ vehicle.vin }}?" hx-target="closest tr" hx-swap="delete">
+                hx-confirm="Delete {{ vehicle.vin }}?" hx-on::before-swap="redirect('/vehicles', event)">
                 <i class="fa-solid fa-trash"></i>
             </button>
         </div>

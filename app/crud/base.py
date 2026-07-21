@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import and_, asc, desc, func, or_, select
+from sqlalchemy import and_, asc, desc, exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 from sqlalchemy.sql import Select
@@ -66,8 +66,7 @@ class BaseCrud[ModelT: Base]:
         column = self.ALLOWED_COLUMNS.get(sort_by)
         if column is None:
             raise ValidationError(
-                f"Not valid column for '{sort_by}' "
-                f"or default '{self.DEFAULT_SORT_COLUMN}'"
+                f"Not valid column for '{sort_by}' " f"or default '{self.DEFAULT_SORT_COLUMN}'"
             )
 
         order_fn = desc if order_by == "desc" else asc
@@ -144,12 +143,26 @@ class BaseCrud[ModelT: Base]:
     async def restore(self, db: AsyncSession, id: UUID) -> ModelT:
         instance = await self.get_or_404(db, id)
         if not hasattr(instance, "deleted_at"):
-            raise NotImplementedError(
-                f"{self.MODEL.__name__} does not support soft delete"
-            )
+            raise NotImplementedError(f"{self.MODEL.__name__} does not support soft delete")
         setattr(instance, "deleted_at", None)
         await db.flush()
         return instance
+
+    async def has_children(
+        self,
+        db: AsyncSession,
+        *,
+        fk_column: InstrumentedAttribute,
+        parent_id: UUID,
+        include_deleted: bool = False,
+    ) -> bool:
+        child_model = fk_column.class_
+        conditions = [fk_column == parent_id]
+
+        if not include_deleted and hasattr(child_model, "deleted_at"):
+            conditions.append(child_model.deleted_at.is_(None))
+
+        return bool(await db.scalar(select(exists().where(*conditions))))
 
     @classmethod
     def _build_q_filters(cls, q: str) -> dict[str, list]:
@@ -199,13 +212,9 @@ class BaseCrud[ModelT: Base]:
             case FilterOp.LTE.value:
                 return column <= value
             case FilterOp.IN.value:
-                return column.in_(
-                    value if isinstance(value, (list, tuple, set)) else [value]
-                )
+                return column.in_(value if isinstance(value, (list, tuple, set)) else [value])
             case FilterOp.NOT_IN.value:
-                return column.not_in(
-                    value if isinstance(value, (list, tuple, set)) else [value]
-                )
+                return column.not_in(value if isinstance(value, (list, tuple, set)) else [value])
             case FilterOp.LIKE.value:
                 return column.like(f"%{value}%")
             case FilterOp.ILIKE.value:

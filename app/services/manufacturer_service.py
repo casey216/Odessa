@@ -8,8 +8,7 @@ from app.core.exceptions.base import ConflictError
 from app.core.pagination import PaginatedResponse, paginate
 from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.manufacturer import ManufacturerCrud
-from app.models.manufacturer import Manufacturer
-from app.models.user import User
+from app.models import Manufacturer, User, VehicleModel
 from app.schemas.base import QueryParams
 from app.schemas.manufacturer import (
     ManufacturerCreate,
@@ -82,6 +81,14 @@ class ManufacturerService(BaseService[ManufacturerCrud]):
             raise
 
     async def delete(self, db: AsyncSession, id: UUID, soft: bool = True) -> None:
+        if await self.crud.has_children(
+            db,
+            fk_column=VehicleModel.manufacturer_id,
+            parent_id=id,
+        ):
+            raise ConflictError(
+                "Cannot delete manufacturer because it has vehicle models. Set inactive instead."
+            )
         if soft:
             await self.crud.soft_delete(db, id)
         else:

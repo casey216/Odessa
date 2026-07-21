@@ -9,9 +9,7 @@ from app.core.pagination import PaginatedResponse, paginate
 from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.tag import tag_crud
 from app.crud.vehicle import VehicleCrud
-from app.models.tag import Tag
-from app.models.user import User
-from app.models.vehicle import Vehicle
+from app.models import Tag, User, Vehicle, VehicleAssignment
 from app.schemas.base import QueryParams
 from app.schemas.vehicle import VehicleCreate, VehicleOut, VehicleUpdate
 from app.services.base import BaseService
@@ -32,9 +30,7 @@ class VehicleService(BaseService[VehicleCrud]):
         ("created_from", "created_to", "created_at"),
     ]
 
-    async def create(
-        self, db: AsyncSession, data: VehicleCreate, current_user: User
-    ) -> Vehicle:
+    async def create(self, db: AsyncSession, data: VehicleCreate, current_user: User) -> Vehicle:
         await vehicle_model_service.get_or_404(db, data.vehicle_model_id)
 
         existing = await self.crud.get_by_vin(db, vin=data.vin)
@@ -92,9 +88,7 @@ class VehicleService(BaseService[VehicleCrud]):
                     setattr(instance, key, value)
             instance.updated_by = current_user.id
 
-            instance.tags = await tag_crud.get_or_create_many(
-                db, [t.value for t in data.tags]
-            )
+            instance.tags = await tag_crud.get_or_create_many(db, [t.value for t in data.tags])
 
             await db.commit()
         except IntegrityError as e:
@@ -106,6 +100,14 @@ class VehicleService(BaseService[VehicleCrud]):
         return await self.crud.get_or_404(db, id)
 
     async def delete(self, db: AsyncSession, id: UUID, soft: bool = True) -> None:
+        if await self.crud.has_children(
+            db,
+            fk_column=VehicleAssignment.vehicle_id,
+            parent_id=id,
+        ):
+            raise ConflictError(
+                "Cannot delete vehicle because it has vehicle assignments. Set inactive instead."
+            )
         if soft:
             await self.crud.soft_delete(db, id)
         else:
@@ -118,9 +120,7 @@ class VehicleService(BaseService[VehicleCrud]):
     async def count(self, db: AsyncSession, id: UUID) -> int:
         return await self.crud.count(db)
 
-    async def set_active_status(
-        self, db: AsyncSession, id: UUID, is_active: bool
-    ) -> Vehicle:
+    async def set_active_status(self, db: AsyncSession, id: UUID, is_active: bool) -> Vehicle:
         instance = await self.crud.get_or_404(db, id)
         if instance.is_active != is_active:
             instance.is_active = is_active

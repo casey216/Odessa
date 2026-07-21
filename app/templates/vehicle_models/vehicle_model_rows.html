@@ -30,7 +30,7 @@
                 data-tooltip="View">
                 <i class="fa-solid fa-eye"></i>
             </a>
-            <a hx-get="/vehicle-models/{{ vehicle_model.id }}/edit" class="btn btn-sm btn-secondary btn-icon"
+            <a href="/vehicle-models/{{ vehicle_model.id }}/edit" class="btn btn-sm btn-secondary btn-icon"
                 data-tooltip="Edit">
                 <i class="fa-solid fa-pen"></i>
             </a>
@@ -42,7 +42,7 @@
             </button>
             <button class="btn btn-sm btn-danger btn-icon" data-tooltip="Delete"
                 hx-delete="/vehicle-models/{{ vehicle_model.id }}" hx-confirm="Delete {{ vehicle_model.name }}?"
-                hx-target="closest tr" hx-swap="delete">
+                hx-on::before-swap="redirect('/vehicle-models', event)">
                 <i class="fa-solid fa-trash"></i>
             </button>
         </div>

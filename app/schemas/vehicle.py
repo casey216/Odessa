@@ -65,9 +65,7 @@ class VehicleCreate(FormBaseModel):
 
 
 class VehicleUpdate(FormBaseModel):
-    vin: str | None = Field(
-        default=None, min_length=VIN_MIN_LENGTH, max_length=VIN_MAX_LENGTH
-    )
+    vin: str | None = Field(default=None, min_length=VIN_MIN_LENGTH, max_length=VIN_MAX_LENGTH)
     license_plate: str | None = None
     color: str | None = None
     status: VehicleStatus | None = None
@@ -82,7 +80,7 @@ class VehicleUpdate(FormBaseModel):
     def normalize_vin(cls, value: str | None) -> str | None:
         return value.strip().upper() if value else value
 
-    @field_validator("purchase_price", mode="before")
+    @field_validator("purchase_price", "odometer_km", mode="before")
     @classmethod
     def strip_thousands_separators(cls, value: object) -> object:
         if isinstance(value, str):
@@ -141,10 +139,6 @@ class VehicleFilter(FormBaseModel):
 
     @model_validator(mode="after")
     def validate_date_range(self) -> Self:
-        if (
-            self.created_from
-            and self.created_to
-            and self.created_from > self.created_to
-        ):
+        if self.created_from and self.created_to and self.created_from > self.created_to:
             raise DateFilterError("created_at")
         return self

@@ -19,17 +19,35 @@ from app.models.user import User
 from app.models.vehicle_assignment import AssignmentStatus, AssignmentType
 from app.schemas.base import QueryParams
 from app.schemas.vehicle_assignment import (
-    DriverAssignmentClose,
+    DriverAssignmentComplete,
     DriverAssignmentCreate,
-    FleetManagerAssignmentClose,
+    FleetManagerAssignmentComplete,
     FleetManagerAssignmentCreate,
     VehicleAssignmentFilter,
     VehicleAssignmentUpdate,
 )
+from app.services.user_service import user_service
 from app.services.vehicle_assignment_service import vehicle_assignment_service
+from app.services.vehicle_service import vehicle_service
 
 TempDpnds = Annotated[Jinja2Templates, Depends(get_template)]
 router = APIRouter(dependencies=[Depends(require_user)])
+
+
+async def _available_vehicles(db: AsyncSession) -> list:
+    """get list of vehicles with status: available"""
+    query = vehicle_service.crud.build_query(filters={"status": "available"})
+    result = await db.execute(query)
+    return list(result.scalars().unique().all())
+
+
+async def _user_list_by_role(db: AsyncSession, role: str) -> list:
+    """get list of drivers"""
+    query = user_service.crud.build_query(
+        filters={"role": role}, sort_by="full_name", order_by="asc"
+    )
+    result = await db.execute(query)
+    return list(result.scalars().unique().all())
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -75,9 +93,7 @@ async def list_vehicle_assignments(
             "vehicle_assignments/vehicle_assignment_list_content.html", context
         )
 
-    return templates.TemplateResponse(
-        "vehicle_assignments/vehicle_assignments.html", context
-    )
+    return templates.TemplateResponse("vehicle_assignments/vehicle_assignments.html", context)
 
 
 @router.get("/{assignment_id}", response_class=HTMLResponse)
@@ -103,9 +119,78 @@ async def read_vehicle_assignment(
     )
 
 
-@router.post(
-    "/drivers", response_class=HTMLResponse, status_code=status.HTTP_201_CREATED
-)
+@router.get("/drivers/new", response_class=HTMLResponse)
+async def new_driver_assignment_form(
+    request: Request,
+    templates: TempDpnds,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[
+        User, Depends(require_permission(PermissionCode.vehicle_assignment_create))
+    ],
+):
+    vehicles = await _available_vehicles(db)
+    drivers = await _user_list_by_role(db, role="driver")
+    return templates.TemplateResponse(
+        "vehicle_assignments/vehicle_assignment_form_driver.html",
+        {
+            "request": request,
+            "vehicles": vehicles,
+            "drivers": drivers,
+            "user": current_user,
+            "page": "vehicle_assignments",
+            "subpage": "vehicle_assignments",
+        },
+    )
+
+
+@router.get("/fleet-managers/new", response_class=HTMLResponse)
+async def new_fleet_manager_assignment_form(
+    request: Request,
+    templates: TempDpnds,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[
+        User, Depends(require_permission(PermissionCode.vehicle_assignment_create))
+    ],
+):
+    vehicles = await _available_vehicles(db)
+    fleet_managers = await _user_list_by_role(db, role="fleet_manager")
+    return templates.TemplateResponse(
+        "vehicle_assignments/vehicle_assignment_form_fleet_manager.html",
+        {
+            "request": request,
+            "vehicles": vehicles,
+            "fleet_managers": fleet_managers,
+            "user": current_user,
+            "page": "vehicle_assignments",
+            "subpage": "vehicle_assignments",
+        },
+    )
+
+
+@router.get("/{assignment_id}/edit", response_class=HTMLResponse)
+async def edit_vehicle_assignment_form(
+    request: Request,
+    templates: TempDpnds,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    assignment_id: UUID,
+    current_user: Annotated[
+        User, Depends(require_permission(PermissionCode.vehicle_assignment_update))
+    ],
+):
+    assignment = await vehicle_assignment_service.get_or_404(db, assignment_id)
+    return templates.TemplateResponse(
+        "vehicle_assignments/vehicle_assignment_edit_form.html",
+        {
+            "request": request,
+            "assignment": assignment,
+            "user": current_user,
+            "page": "vehicle_assignments",
+            "subpage": "vehicle_assignments",
+        },
+    )
+
+
+@router.post("/drivers", response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
 async def create_driver_assignment(
     request: Request,
     db: Annotated[AsyncSession, Depends(get_audited_db)],
@@ -168,51 +253,52 @@ async def delete_vehicle_assignment(
     return await vehicle_assignment_service.delete(db, assignment_id)
 
 
-@router.post("/{assignment_id}/drivers/close", response_class=HTMLResponse)
-async def close_driver_assignment(
+@router.post("/{assignment_id}/drivers/complete", response_class=HTMLResponse)
+async def complete_driver_assignment(
     request: Request,
-    templates: TempDpnds,
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     assignment_id: UUID,
-    close_in: Annotated[DriverAssignmentClose, Form()],
+    complete_in: Annotated[DriverAssignmentComplete, Form()],
     current_user: Annotated[
         User, Depends(require_permission(PermissionCode.vehicle_assignment_update))
     ],
 ):
-    if close_in.status == AssignmentStatus.COMPLETED:
-        assignment = await vehicle_assignment_service.complete(
-            db, assignment_id, current_user, close_in
-        )
-    else:
-        assignment = await vehicle_assignment_service.cancel(
-            db, assignment_id, current_user, close_in
-        )
-    return templates.TemplateResponse(
-        "vehicle_assignments/vehicle_assignment_rows.html",
-        {"request": request, "assignments": [assignment]},
+    assignment = await vehicle_assignment_service.complete(
+        db, assignment_id, current_user, complete_in
     )
+    response = HTMLResponse(content="")
+    response.headers["HX-Redirect"] = f"/vehicle-assignments/{assignment.id}"
+    return response
 
 
-@router.post("/{assignment_id}/fleet-managers/close", response_class=HTMLResponse)
-async def close_fleet_manager_assignment(
+@router.post("/{assignment_id}/fleet-managers/complete", response_class=HTMLResponse)
+async def complete_fleet_manager_assignment(
     request: Request,
-    templates: TempDpnds,
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     assignment_id: UUID,
-    close_in: Annotated[FleetManagerAssignmentClose, Form()],
+    complete_in: Annotated[FleetManagerAssignmentComplete, Form()],
     current_user: Annotated[
         User, Depends(require_permission(PermissionCode.vehicle_assignment_update))
     ],
 ):
-    if close_in.status == AssignmentStatus.COMPLETED:
-        assignment = await vehicle_assignment_service.complete(
-            db, assignment_id, current_user, close_in
-        )
-    else:
-        assignment = await vehicle_assignment_service.cancel(
-            db, assignment_id, current_user, close_in
-        )
-    return templates.TemplateResponse(
-        "vehicle_assignments/vehicle_assignment_rows.html",
-        {"request": request, "assignments": [assignment]},
+    assignment = await vehicle_assignment_service.complete(
+        db, assignment_id, current_user, complete_in
     )
+    response = HTMLResponse(content="")
+    response.headers["HX-Redirect"] = f"/vehicle-assignments/{assignment.id}"
+    return response
+
+
+@router.post("/{assignment_id}/cancel", response_class=HTMLResponse)
+async def cancel_vehicle_assignment(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_audited_db)],
+    assignment_id: UUID,
+    current_user: Annotated[
+        User, Depends(require_permission(PermissionCode.vehicle_assignment_update))
+    ],
+):
+    assignment = await vehicle_assignment_service.cancel(db, assignment_id, current_user)
+    response = HTMLResponse(content="")
+    response.headers["HX-Redirect"] = f"/vehicle-assignments/{assignment.id}"
+    return response

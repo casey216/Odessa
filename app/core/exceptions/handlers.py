@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Response, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import RedirectResponse
 from sqlalchemy.exc import IntegrityError
 
@@ -43,16 +44,22 @@ def register_exception_handlers(app: FastAPI) -> None:
         resp.headers["HX-Flash"] = f"error:{str(exc)}"
         return resp
 
+    @app.exception_handler(RequestValidationError)
+    async def handle_rvalidation(request: Request, exc: RequestValidationError) -> Response:
+        resp = Response(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        for error in exc.errors():
+            field = error["loc"][1].replace("_", " ")
+            msg = error["msg"]
+            error_message = f"{field}: {msg}"
+            resp.headers["HX-Flash"] = f"error:{error_message}"
+        return resp
+
     @app.exception_handler(AuthenticationError)
-    async def handle_authentication(
-        request: Request, exc: AuthenticationError
-    ) -> Response:
+    async def handle_authentication(request: Request, exc: AuthenticationError) -> Response:
         return RedirectResponse("/auth/login", status_code=302)
 
     @app.exception_handler(AuthorizationError)
-    async def handle_authorization(
-        request: Request, exc: AuthorizationError
-    ) -> Response:
+    async def handle_authorization(request: Request, exc: AuthorizationError) -> Response:
         if request.headers.get("HX-Request"):
             resp = Response(status_code=status.HTTP_403_FORBIDDEN)
             resp.headers["HX-Flash"] = f"error:{str(exc)}"
