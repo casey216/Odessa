@@ -139,7 +139,19 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud]):
 
         return await self.crud.get_or_404(db, id)
 
-    async def delete(self, db: AsyncSession, id: UUID, soft: bool = True) -> None:
+    async def delete(
+        self, db: AsyncSession, id: UUID, current_user: User, soft: bool = True
+    ) -> None:
+        instance = await self.crud.get_or_404(db, id)
+        if (
+            instance.assignment_type == AssignmentType.DRIVER
+            and instance.status == AssignmentStatus.ACTIVE
+        ):
+            vehicle = await vehicle_service.get_or_404(db, instance.vehicle_id)
+            if vehicle.status == VehicleStatus.IN_USE:
+                vehicle.status = VehicleStatus.AVAILABLE
+                vehicle.updated_by = current_user.id
+
         if soft:
             await self.crud.soft_delete(db, id)
         else:

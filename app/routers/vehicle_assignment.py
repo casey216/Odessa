@@ -250,7 +250,7 @@ async def delete_vehicle_assignment(
         User, Depends(require_permission(PermissionCode.vehicle_assignment_delete))
     ],
 ):
-    return await vehicle_assignment_service.delete(db, assignment_id)
+    return await vehicle_assignment_service.delete(db, assignment_id, current_user)
 
 
 @router.post("/{assignment_id}/drivers/complete", response_class=HTMLResponse)
