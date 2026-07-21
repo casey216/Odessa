@@ -78,7 +78,6 @@
     (function () {
         const vehicleSelect = document.getElementById('vehicle-select');
         const currentOdometerValue = document.getElementById('current-odometer-value');
-        const odometerOutInput = document.getElementById('odometer-out-input');
 
         function formatKm(raw) {
             const n = Number(raw);
@@ -91,14 +90,11 @@
 
             if (odometer === undefined || odometer === '') {
                 currentOdometerValue.textContent = 'select a vehicle';
-                odometerOutInput.value = '';
                 return;
             }
 
             const formatted = formatKm(odometer);
             currentOdometerValue.textContent = formatted + ' km';
-            odometerOutInput.value = formatted;
-            odometerOutInput.dispatchEvent(new Event('input', { bubbles: true }));
         });
     })();
 </script>
