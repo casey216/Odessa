@@ -48,8 +48,7 @@ class UserService:
 
     async def get_or_404(self, db: AsyncSession, id: UUID, current_user: User) -> User:
         user = await self.crud.get_or_404(db, id)
-        if not UserPolicy.can_read(user, current_user):
-            raise InsufficientPermissionError()
+        UserPolicy.authorize(UserPolicy.can_read, current_user, user)
         return user
 
     async def list(

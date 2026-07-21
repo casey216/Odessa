@@ -8,27 +8,9 @@ from .base import Policy
 
 class VehicleAssignmentPolicy(Policy):
     @staticmethod
-    def can_create(current_user: User) -> bool:
-        return permission_service.user_has_permission(
-            current_user, PermissionCode.vehicle_assignment_create
-        )
-
-    @staticmethod
-    def can_read(assignment: VehicleAssignment, current_user: User) -> bool:
+    def can_read(current_user: User, resource: VehicleAssignment) -> bool:
         if permission_service.user_has_permission(
             current_user, PermissionCode.vehicle_assignment_read
         ):
             return True
-        return assignment.user_id == current_user.id
-
-    @staticmethod
-    def can_update(current_user: User) -> bool:
-        return permission_service.user_has_permission(
-            current_user, PermissionCode.vehicle_assignment_update
-        )
-
-    @staticmethod
-    def can_delete(current_user: User) -> bool:
-        return permission_service.user_has_permission(
-            current_user, PermissionCode.vehicle_assignment_delete
-        )
+        return resource.user_id == current_user.id
