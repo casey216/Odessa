@@ -61,6 +61,15 @@ class DriverAssignmentComplete(BaseModel):
     odometer_in_km: int = Field(ge=0)
     notes: str | None = None
 
+    @field_validator("odometer_in_km", mode="before")
+    @classmethod
+    def strip_thousands_separators(cls, value: object) -> object:
+        if isinstance(value, str):
+            value = value.replace(",", "").strip()
+            if value == "":
+                return None
+        return value
+
 
 class FleetManagerAssignmentComplete(BaseModel):
     notes: str | None = None
