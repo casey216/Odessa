@@ -40,6 +40,11 @@
         {% if assignment.status.value == 'active' %}
         <a href="/vehicle-assignments/{{ assignment.id }}/edit" class="btn btn-secondary"><i
                 class="fa-solid fa-pen"></i> Edit</a>
+        <button type="button" class="btn btn-secondary" hx-post="/vehicle-assignments/{{ assignment.id }}/cancel"
+            hx-confirm="Cancel this assignment?"
+            hx-on::before-swap="redirect('/vehicle-assignments/{{ assignment.id }}', event)">
+            <i class="fa-solid fa-ban"></i> Cancel
+        </button>
         {% endif %}
         <button type="button" class="btn btn-danger" hx-delete="/vehicle-assignments/{{ assignment.id }}"
             hx-confirm="Delete this assignment?" hx-on::before-swap="redirect('/vehicle-assignments', event)">
@@ -118,24 +123,12 @@
 <div class="card" style="max-width:480px;margin-top:20px;">
     <h3
         style="font-size:14px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
-        <i class="fa-solid fa-flag-checkered" style="margin-right:8px;color:var(--accent)"></i>Close Assignment
+        <i class="fa-solid fa-flag-checkered" style="margin-right:8px;color:var(--accent)"></i>Complete Assignment
     </h3>
     <form {% if assignment.assignment_type.value=='driver' %}
-        hx-post="/vehicle-assignments/{{ assignment.id }}/drivers/close" {% else %}
-        hx-post="/vehicle-assignments/{{ assignment.id }}/fleet-managers/close" {% endif %}
+        hx-post="/vehicle-assignments/{{ assignment.id }}/drivers/complete" {% else %}
+        hx-post="/vehicle-assignments/{{ assignment.id }}/fleet-managers/complete" {% endif %} hx-swap="none"
         hx-on::before-swap="redirect('/vehicle-assignments/{{ assignment.id }}', event)">
-
-        <div class="form-group">
-            <label class="form-label">Outcome *</label>
-            <div style="display:flex;gap:16px;">
-                <label style="display:flex;align-items:center;gap:6px;font-weight:normal;">
-                    <input type="radio" name="status" value="completed" checked> Completed
-                </label>
-                <label style="display:flex;align-items:center;gap:6px;font-weight:normal;">
-                    <input type="radio" name="status" value="cancelled"> Cancelled
-                </label>
-            </div>
-        </div>
 
         {% if assignment.assignment_type.value == 'driver' %}
         <div class="form-group">
@@ -152,7 +145,7 @@
 
         <div style="display:flex;justify-content:flex-end;margin-top:8px;">
             <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-flag-checkered"></i> Close Assignment
+                <i class="fa-solid fa-flag-checkered"></i> Complete Assignment
             </button>
         </div>
     </form>
