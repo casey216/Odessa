@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.core.exceptions.validation import DateFilterError
 from app.models.vehicle_assignment import AssignmentStatus, AssignmentType
@@ -33,6 +33,15 @@ class DriverAssignmentCreate(FormBaseModel):
     assignment_type: AssignmentType = AssignmentType.DRIVER
     odometer_out_km: int = Field(ge=0)
     notes: str | None = Field(default=None, max_length=NOTES_MAX_LENGTH)
+
+    @field_validator("odometer_out_km", mode="before")
+    @classmethod
+    def strip_thousands_separators(cls, value: object) -> object:
+        if isinstance(value, str):
+            value = value.replace(",", "").strip()
+            if value == "":
+                return None
+        return value
 
 
 class FleetManagerAssignmentCreate(FormBaseModel):
