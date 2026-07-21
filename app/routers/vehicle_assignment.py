@@ -106,7 +106,7 @@ async def read_vehicle_assignment(
         User, Depends(require_permission(PermissionCode.vehicle_assignment_read))
     ],
 ):
-    assignment = await vehicle_assignment_service.get_or_404(db, assignment_id)
+    assignment = await vehicle_assignment_service.get_or_404(db, assignment_id, current_user)
     return templates.TemplateResponse(
         "vehicle_assignments/vehicle_assignment_detail.html",
         {
@@ -177,7 +177,7 @@ async def edit_vehicle_assignment_form(
         User, Depends(require_permission(PermissionCode.vehicle_assignment_update))
     ],
 ):
-    assignment = await vehicle_assignment_service.get_or_404(db, assignment_id)
+    assignment = await vehicle_assignment_service.get_or_404(db, assignment_id, current_user)
     return templates.TemplateResponse(
         "vehicle_assignments/vehicle_assignment_edit_form.html",
         {

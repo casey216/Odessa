@@ -16,6 +16,7 @@ from app.models.vehicle_assignment import (
     AssignmentType,
     VehicleAssignment,
 )
+from app.policies.vehicle_assignment_policy import VehicleAssignmentPolicy
 from app.schemas.base import QueryParams
 from app.schemas.vehicle_assignment import (
     DriverAssignmentComplete,
@@ -107,8 +108,12 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud]):
     async def get(self, db: AsyncSession, id: UUID) -> VehicleAssignment | None:
         return await self.crud.get(db, id)
 
-    async def get_or_404(self, db: AsyncSession, id: UUID) -> VehicleAssignment:
-        return await self.crud.get_or_404(db, id)
+    async def get_or_404(self, db: AsyncSession, id: UUID, current_user: User) -> VehicleAssignment:
+        vehicle_assignment = await self.crud.get_or_404(db, id)
+        VehicleAssignmentPolicy.authorize(
+            VehicleAssignmentPolicy.can_read, current_user, vehicle_assignment
+        )
+        return vehicle_assignment
 
     async def list(
         self, request: Request, db: AsyncSession, params: QueryParams
