@@ -52,8 +52,6 @@ class FleetManagerAssignmentCreate(FormBaseModel):
 
 
 class VehicleAssignmentUpdate(FormBaseModel):
-    odometer_out_km: int | None = Field(default=None, ge=0)
-    odometer_in_km: int | None = Field(default=None, ge=0)
     notes: str | None = Field(default=None, max_length=NOTES_MAX_LENGTH)
 
 
