@@ -70,8 +70,8 @@ async def list_vehicle_assignments(
 
     context = {
         "request": request,
-        "page": "vehicle_assignments",
-        "subpage": "vehicle_assignments",
+        "page": "vehicles",
+        "subpage": "assignments",
         "assignments": result.items,
         "search": params.filters.search,
         "assignment_type_filter": params.filters.assignment_type,
@@ -113,8 +113,8 @@ async def read_vehicle_assignment(
             "request": request,
             "assignment": assignment,
             "user": current_user,
-            "page": "vehicle_assignments",
-            "subpage": "vehicle_assignments",
+            "page": "vehicles",
+            "subpage": "assignments",
         },
     )
 
@@ -137,8 +137,8 @@ async def new_driver_assignment_form(
             "vehicles": vehicles,
             "drivers": drivers,
             "user": current_user,
-            "page": "vehicle_assignments",
-            "subpage": "vehicle_assignments",
+            "page": "vehicles",
+            "subpage": "assignments",
         },
     )
 
@@ -161,8 +161,8 @@ async def new_fleet_manager_assignment_form(
             "vehicles": vehicles,
             "fleet_managers": fleet_managers,
             "user": current_user,
-            "page": "vehicle_assignments",
-            "subpage": "vehicle_assignments",
+            "page": "vehicles",
+            "subpage": "assignments",
         },
     )
 
@@ -184,8 +184,8 @@ async def edit_vehicle_assignment_form(
             "request": request,
             "assignment": assignment,
             "user": current_user,
-            "page": "vehicle_assignments",
-            "subpage": "vehicle_assignments",
+            "page": "vehicles",
+            "subpage": "assignments",
         },
     )
 
