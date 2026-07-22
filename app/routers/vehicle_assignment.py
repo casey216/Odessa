@@ -66,7 +66,7 @@ async def list_vehicle_assignments(
             detail="Only system admins can view deleted assignments",
         )
 
-    result = await vehicle_assignment_service.list(request, db, params)
+    result = await vehicle_assignment_service.list(request, db, params, current_user)
 
     context = {
         "request": request,

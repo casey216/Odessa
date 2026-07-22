@@ -116,7 +116,7 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud]):
         return vehicle_assignment
 
     async def list(
-        self, request: Request, db: AsyncSession, params: QueryParams
+        self, request: Request, db: AsyncSession, params: QueryParams, current_user: User
     ) -> PaginatedResponse[out_schema]:
         filters = self._build_post_filters(params.filters)
         query = self.crud.build_query(
@@ -124,6 +124,7 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud]):
             sort_by=params.filters.sort_by,
             order_by=params.filters.sort_order,
         )
+        query = VehicleAssignmentPolicy.scope(query, current_user)
         return await paginate(request, db, query, params.pagination, self.out_schema)
 
     async def update(
