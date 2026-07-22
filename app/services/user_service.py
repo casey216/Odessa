@@ -46,7 +46,10 @@ class UserService:
     async def get(self, db: AsyncSession, id: UUID) -> User | None:
         return await self.crud.get(db, id)
 
-    async def get_or_404(self, db: AsyncSession, id: UUID, current_user: User) -> User:
+    async def get_or_404(self, db: AsyncSession, id: UUID) -> User:
+        return await self.crud.get_or_404(db, id)
+
+    async def get_or_403(self, db: AsyncSession, id: UUID, current_user: User) -> User:
         user = await self.crud.get_or_404(db, id)
         UserPolicy.authorize(UserPolicy.can_read, current_user, user)
         return user

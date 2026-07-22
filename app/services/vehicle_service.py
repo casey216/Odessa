@@ -16,7 +16,7 @@ from app.services.base import BaseService
 from app.services.vehicle_model_service import vehicle_model_service
 
 
-class VehicleService(BaseService[VehicleCrud]):
+class VehicleService(BaseService[VehicleCrud, Vehicle]):
     crud = VehicleCrud()
     out_schema = VehicleOut
     FILTER_FIELDS = {
@@ -51,12 +51,6 @@ class VehicleService(BaseService[VehicleCrud]):
                 raise ConflictError(parse_unique_violation(e)) from e
             raise
         return await self.crud.get_or_404(db, instance.id)
-
-    async def get(self, db: AsyncSession, id: UUID) -> Vehicle | None:
-        return await self.crud.get(db, id)
-
-    async def get_or_404(self, db: AsyncSession, id: UUID) -> Vehicle:
-        return await self.crud.get_or_404(db, id)
 
     async def list(
         self, request: Request, db: AsyncSession, params: QueryParams
@@ -113,12 +107,6 @@ class VehicleService(BaseService[VehicleCrud]):
         else:
             await self.crud.delete(db, id)
         await db.commit()
-
-    async def exists(self, db: AsyncSession, id: UUID) -> bool:
-        return await self.crud.exists(db, id)
-
-    async def count(self, db: AsyncSession, id: UUID) -> int:
-        return await self.crud.count(db)
 
     async def set_active_status(self, db: AsyncSession, id: UUID, is_active: bool) -> Vehicle:
         instance = await self.crud.get_or_404(db, id)

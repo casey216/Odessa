@@ -29,16 +29,12 @@ TempDpnds = Annotated[Jinja2Templates, Depends(get_template)]
 async def list_users(
     request: Request,
     templates: TempDpnds,
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.user_read))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.user_read))],
     params: Annotated[QueryParams, Depends(get_query_params(UserFilter))],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     if params.filters.include_deleted and not current_user.is_super_user:
-        raise HTTPException(
-            status_code=403, detail="Only system admins can view deleted users"
-        )
+        raise HTTPException(status_code=403, detail="Only system admins can view deleted users")
 
     result = await user_service.list(request, db, params)
 
@@ -86,9 +82,7 @@ async def new_user_form(
 async def create_user(
     request: Request,
     user_in: Annotated[UserCreate, Form()],
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.user_create))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.user_create))],
     db: Annotated[AsyncSession, Depends(get_audited_db)],
 ):
     await user_service.create(db, user_in, current_user)
@@ -105,7 +99,7 @@ async def read_user(
     current_user: User = Depends(require_permission(PermissionCode.user_read)),
     db: AsyncSession = Depends(get_db),
 ):
-    user = await user_service.get_or_404(db, user_id, current_user)
+    user = await user_service.get_or_403(db, user_id, current_user)
     return templates.TemplateResponse(
         "users/user_detail.html",
         {
@@ -125,7 +119,7 @@ async def edit_user_form(
     current_user: User = Depends(require_permission(PermissionCode.user_update)),
     db: AsyncSession = Depends(get_db),
 ):
-    target_user = await user_service.get_or_404(db, user_id, current_user)
+    target_user = await user_service.get_or_403(db, user_id, current_user)
     return templates.TemplateResponse(
         "users/user_form.html",
         {
@@ -180,8 +174,6 @@ async def deactivate_user(
 async def delete_user(
     user_id: UUID,
     db: Annotated[AsyncSession, Depends(get_audited_db)],
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.user_delete))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.user_delete))],
 ):
     return await user_service.delete(db, user_id)

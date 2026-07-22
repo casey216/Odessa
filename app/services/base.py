@@ -1,12 +1,28 @@
 from datetime import datetime, time, timedelta
+from uuid import UUID
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import Base
 from app.crud.base import BaseCrud
 
 
-class BaseService[CrudT: BaseCrud]:
+class BaseService[CrudT: BaseCrud, ModelT: Base]:
     FILTER_FIELDS: set
     DATE_FIELDS: list[tuple[str, str, str]]
     crud: CrudT
+
+    async def get(self, db: AsyncSession, id: UUID) -> ModelT | None:
+        return await self.crud.get(db, id)
+
+    async def get_or_404(self, db: AsyncSession, id: UUID) -> ModelT:
+        return await self.crud.get_or_404(db, id)
+
+    async def exists(self, db: AsyncSession, id: UUID) -> bool:
+        return await self.crud.exists(db, id)
+
+    async def count(self, db: AsyncSession, id: UUID) -> int:
+        return await self.crud.count(db)
 
     @classmethod
     def _build_post_filters(cls, params):

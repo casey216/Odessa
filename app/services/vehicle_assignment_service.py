@@ -31,7 +31,7 @@ from app.services.user_service import user_service
 from app.services.vehicle_service import vehicle_service
 
 
-class VehicleAssignmentService(BaseService[VehicleAssignmentCrud]):
+class VehicleAssignmentService(BaseService[VehicleAssignmentCrud, VehicleAssignment]):
     crud = VehicleAssignmentCrud()
     out_schema = VehicleAssignmentOut
     FILTER_FIELDS = {
@@ -52,7 +52,7 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud]):
         current_user: User,
     ) -> VehicleAssignment:
         vehicle = await vehicle_service.get_or_404(db, data.vehicle_id)
-        await user_service.get_or_404(db, data.user_id, current_user)
+        await user_service.get_or_404(db, data.user_id)
 
         existing_for_vehicle = await self.crud.get_active_for_vehicle(
             db, vehicle_id=data.vehicle_id, assignment_type=data.assignment_type
@@ -105,15 +105,12 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud]):
             raise
         return await self.crud.get_or_404(db, instance.id)
 
-    async def get(self, db: AsyncSession, id: UUID) -> VehicleAssignment | None:
-        return await self.crud.get(db, id)
-
-    async def get_or_404(self, db: AsyncSession, id: UUID, current_user: User) -> VehicleAssignment:
-        vehicle_assignment = await self.crud.get_or_404(db, id)
+    async def get_or_403(self, db: AsyncSession, id: UUID, current_user: User) -> VehicleAssignment:
+        assignment = await self.crud.get_or_404(db, id)
         VehicleAssignmentPolicy.authorize(
-            VehicleAssignmentPolicy.can_read, current_user, vehicle_assignment
+            VehicleAssignmentPolicy.can_read, current_user, assignment
         )
-        return vehicle_assignment
+        return assignment
 
     async def list(
         self, request: Request, db: AsyncSession, params: QueryParams, current_user: User
@@ -163,12 +160,6 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud]):
         else:
             await self.crud.delete(db, id)
         await db.commit()
-
-    async def exists(self, db: AsyncSession, id: UUID) -> bool:
-        return await self.crud.exists(db, id)
-
-    async def count(self, db: AsyncSession, id: UUID) -> int:
-        return await self.crud.count(db)
 
     async def complete(
         self,
