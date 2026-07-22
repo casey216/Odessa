@@ -35,8 +35,8 @@ router = APIRouter(dependencies=[Depends(require_user)])
 
 
 async def _available_vehicles(db: AsyncSession) -> list:
-    """get list of vehicles with status: available"""
-    query = vehicle_service.crud.build_query(filters={"status": "available"})
+    """get list of active vehicles with status: available"""
+    query = vehicle_service.crud.build_query(filters={"status": "available", "is_active": True})
     result = await db.execute(query)
     return list(result.scalars().unique().all())
 

@@ -54,6 +54,9 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud, VehicleAssignm
         vehicle = await vehicle_service.get_or_404(db, data.vehicle_id)
         await user_service.get_or_404(db, data.user_id)
 
+        if not vehicle.is_active:
+            raise ConflictError("Cannot assign inactive vehicle.")
+
         existing_for_vehicle = await self.crud.get_active_for_vehicle(
             db, vehicle_id=data.vehicle_id, assignment_type=data.assignment_type
         )
