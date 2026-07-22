@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, Request
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -11,6 +11,7 @@ from app.core.audit import register_audit_listener
 from app.core.context import RequestContext
 from app.core.database import AsyncSessionLocal
 from app.core.exceptions import (
+    AuthenticationError,
     InsufficientPermissionError,
     InvalidCredentialsError,
     InvalidTokenError,
@@ -31,16 +32,12 @@ async def get_db():
             await session.close()
 
 
-async def get_current_user(
-    request: Request, db: AsyncSession = Depends(get_db)
-) -> User | None:
+async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)) -> User | None:
     token = request.cookies.get("access_token")
     if not token:
         return None
     user_id = decode_token(token)
-    return await db.scalar(
-        select(User).where(User.id == user_id, User.is_active.is_(True))
-    )
+    return await db.scalar(select(User).where(User.id == user_id, User.is_active.is_(True)))
 
 
 async def get_current_user_with_permissions(
@@ -54,9 +51,7 @@ async def get_current_user_with_permissions(
     user_id = decode_token(token)
     result = await db.execute(
         select(User)
-        .options(
-            selectinload(User.permission_links).selectinload(UserPermission.permission)
-        )
+        .options(selectinload(User.permission_links).selectinload(UserPermission.permission))
         .where(User.id == user_id, User.is_active.is_(True))
     )
     user = result.scalar_one_or_none()
@@ -92,9 +87,7 @@ async def get_audited_db(ctx: RequestContext = Depends(get_request_context)):
 async def require_user(request: Request, db: AsyncSession = Depends(get_db)) -> User:
     user = await get_current_user(request, db)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_302_FOUND, headers={"Location": "/auth/login"}
-        )
+        raise AuthenticationError
     return user
 
 

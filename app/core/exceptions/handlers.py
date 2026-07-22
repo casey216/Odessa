@@ -56,7 +56,11 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(AuthenticationError)
     async def handle_authentication(request: Request, exc: AuthenticationError) -> Response:
-        return RedirectResponse("/auth/login", status_code=302)
+        if request.headers.get("HX-Request"):
+            resp = Response(status_code=status.HTTP_401_UNAUTHORIZED)
+            resp.headers["HX-Redirect"] = "/auth/login"
+            return resp
+        return RedirectResponse("/auth/login")
 
     @app.exception_handler(AuthorizationError)
     async def handle_authorization(request: Request, exc: AuthorizationError) -> Response:

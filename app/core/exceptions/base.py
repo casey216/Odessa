@@ -13,20 +13,16 @@ class NotFoundError(DomainError):
 
 
 class ConflictError(DomainError):
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
+    pass
 
 
 class ValidationError(DomainError):
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
+    pass
 
 
 class AuthorizationError(DomainError):
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
+    pass
 
 
 class AuthenticationError(DomainError):
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
+    pass
