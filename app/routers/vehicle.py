@@ -42,16 +42,12 @@ async def list_vehicles(
     templates: TempDpnds,
     db: Annotated[AsyncSession, Depends(get_db)],
     params: Annotated[QueryParams, Depends(get_query_params(VehicleFilter))],
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.vehicle_read))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_read))],
 ):
     if params.filters.include_deleted and not current_user.is_super_user:
-        raise HTTPException(
-            status_code=403, detail="Only system admins can view deleted vehicles"
-        )
+        raise HTTPException(status_code=403, detail="Only system admins can view deleted vehicles")
 
-    result = await vehicle_service.list(request, db, params)
+    result = await vehicle_service.list(request, db, params, current_user)
     vehicle_models = await _active_vehicle_models(db)
 
     context = {
@@ -88,9 +84,7 @@ async def new_vehicle_form(
     request: Request,
     templates: TempDpnds,
     db: Annotated[AsyncSession, Depends(get_db)],
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.vehicle_create))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_create))],
 ):
     vehicle_models = await _active_vehicle_models(db)
     return templates.TemplateResponse(
@@ -114,9 +108,7 @@ async def edit_vehicle_form(
     templates: TempDpnds,
     db: Annotated[AsyncSession, Depends(get_db)],
     vehicle_id: UUID,
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.vehicle_update))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_update))],
 ):
     vehicle = await vehicle_service.get_or_404(db, vehicle_id)
     vehicle_models = await _active_vehicle_models(db)
@@ -141,9 +133,7 @@ async def read_vehicle(
     templates: TempDpnds,
     db: Annotated[AsyncSession, Depends(get_db)],
     vehicle_id: UUID,
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.vehicle_read))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_read))],
 ):
     vehicle = await vehicle_service.get_or_404(db, vehicle_id)
     return templates.TemplateResponse(
@@ -163,9 +153,7 @@ async def create_vehicle(
     request: Request,
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     vehicle_in: Annotated[VehicleCreate, Form()],
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.vehicle_create))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_create))],
 ):
     await vehicle_service.create(db, vehicle_in, current_user)
     response = HTMLResponse(content="", status_code=status.HTTP_201_CREATED)
@@ -179,9 +167,7 @@ async def update_vehicle(
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     vehicle_id: UUID,
     vehicle_in: Annotated[VehicleUpdate, Form()],
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.vehicle_update))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_update))],
 ):
     vehicle = await vehicle_service.update(db, vehicle_id, vehicle_in, current_user)
     response = HTMLResponse(content="")
@@ -193,9 +179,7 @@ async def update_vehicle(
 async def delete_vehicle(
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     vehicle_id: UUID,
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.vehicle_delete))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_delete))],
 ):
     return await vehicle_service.delete(db, vehicle_id)
 
@@ -206,9 +190,7 @@ async def activate_vehicle(
     templates: TempDpnds,
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     vehicle_id: UUID,
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.vehicle_update))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_update))],
 ):
     vehicle = await vehicle_service.set_active_status(db, vehicle_id, is_active=True)
     return templates.TemplateResponse(
@@ -223,9 +205,7 @@ async def deactivate_vehicle(
     templates: TempDpnds,
     db: Annotated[AsyncSession, Depends(get_audited_db)],
     vehicle_id: UUID,
-    current_user: Annotated[
-        User, Depends(require_permission(PermissionCode.vehicle_update))
-    ],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_update))],
 ):
     vehicle = await vehicle_service.set_active_status(db, vehicle_id, is_active=False)
     return templates.TemplateResponse(

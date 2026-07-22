@@ -10,6 +10,7 @@ from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.tag import tag_crud
 from app.crud.vehicle import VehicleCrud
 from app.models import Tag, User, Vehicle, VehicleAssignment
+from app.policies.vehicle_policy import VehiclePolicy
 from app.schemas.base import QueryParams
 from app.schemas.vehicle import VehicleCreate, VehicleOut, VehicleUpdate
 from app.services.base import BaseService
@@ -53,7 +54,7 @@ class VehicleService(BaseService[VehicleCrud, Vehicle]):
         return await self.crud.get_or_404(db, instance.id)
 
     async def list(
-        self, request: Request, db: AsyncSession, params: QueryParams
+        self, request: Request, db: AsyncSession, params: QueryParams, current_user: User
     ) -> PaginatedResponse[out_schema]:
         filters = self._build_post_filters(params.filters)
         query = self.crud.build_query(
@@ -64,6 +65,7 @@ class VehicleService(BaseService[VehicleCrud, Vehicle]):
 
         if params.filters.tag:
             query = query.join(Vehicle.tags).where(Tag.name == params.filters.tag.value)
+        query = VehiclePolicy.scope(query, current_user)
 
         return await paginate(request, db, query, params.pagination, self.out_schema)
 
