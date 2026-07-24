@@ -110,7 +110,7 @@ async def edit_vehicle_form(
     vehicle_id: UUID,
     current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_update))],
 ):
-    vehicle = await vehicle_service.get_or_404(db, vehicle_id)
+    vehicle = await vehicle_service.get_or_403(db, vehicle_id, current_user)
     vehicle_models = await _active_vehicle_models(db)
     return templates.TemplateResponse(
         "vehicles/vehicle_form.html",
@@ -135,7 +135,7 @@ async def read_vehicle(
     vehicle_id: UUID,
     current_user: Annotated[User, Depends(require_permission(PermissionCode.vehicle_read))],
 ):
-    vehicle = await vehicle_service.get_or_404(db, vehicle_id)
+    vehicle = await vehicle_service.get_or_403(db, vehicle_id, current_user)
     return templates.TemplateResponse(
         "vehicles/vehicle_detail.html",
         {

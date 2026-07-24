@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any
 
 from sqlalchemy import Select, false, select
@@ -8,6 +9,12 @@ from app.schemas.vehicle_assignment import AssignmentStatus
 from app.services.permission_service import permission_service
 
 from .base import Policy
+
+
+@dataclass
+class VehicleReadContext:
+    vehicle: Vehicle
+    has_active_assignment: bool
 
 
 class VehiclePolicy(Policy):
@@ -25,3 +32,13 @@ class VehiclePolicy(Policy):
             )
             query = query.where(Vehicle.id.in_(own_ids))
         return query
+
+    @staticmethod
+    def can_read(current_user: User, resource: VehicleReadContext) -> bool:
+        if not permission_service.user_has_permission(current_user, PermissionCode.vehicle_read):
+            return False
+
+        if (current_user.role == UserRole.driver) or (current_user.role == UserRole.fleet_manager):
+            return resource.has_active_assignment
+
+        return True

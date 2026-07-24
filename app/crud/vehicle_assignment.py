@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import contains_eager, joinedload
 from sqlalchemy.sql import Select
@@ -74,3 +74,21 @@ class VehicleAssignmentCrud(BaseCrud[VehicleAssignment]):
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def exists_active_assignment(
+        self,
+        db: AsyncSession,
+        *,
+        vehicle_id: UUID,
+        user_id: UUID,
+    ) -> bool:
+        stmt = select(
+            exists().where(
+                self.MODEL.vehicle_id == vehicle_id,
+                self.MODEL.user_id == user_id,
+                self.MODEL.status == AssignmentStatus.ACTIVE,
+                self.MODEL.deleted_at.is_(None),
+            )
+        )
+
+        return bool(await db.scalar(stmt))

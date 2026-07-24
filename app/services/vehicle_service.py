@@ -9,8 +9,9 @@ from app.core.pagination import PaginatedResponse, paginate
 from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.tag import tag_crud
 from app.crud.vehicle import VehicleCrud
+from app.crud.vehicle_assignment import VehicleAssignmentCrud
 from app.models import Tag, User, Vehicle, VehicleAssignment
-from app.policies.vehicle_policy import VehiclePolicy
+from app.policies.vehicle_policy import VehiclePolicy, VehicleReadContext
 from app.schemas.base import QueryParams
 from app.schemas.vehicle import VehicleCreate, VehicleOut, VehicleUpdate
 from app.services.base import BaseService
@@ -52,6 +53,15 @@ class VehicleService(BaseService[VehicleCrud, Vehicle]):
                 raise ConflictError(parse_unique_violation(e)) from e
             raise
         return await self.crud.get_or_404(db, instance.id)
+
+    async def get_or_403(self, db: AsyncSession, id: UUID, current_user: User) -> Vehicle:
+        vehicle = await self.crud.get_or_404(db, id)
+        has_active_assignment = await VehicleAssignmentCrud().exists_active_assignment(
+            db=db, vehicle_id=id, user_id=current_user.id
+        )
+        context = VehicleReadContext(vehicle=vehicle, has_active_assignment=has_active_assignment)
+        VehiclePolicy.authorize(VehiclePolicy.can_read, current_user, context)
+        return vehicle
 
     async def list(
         self, request: Request, db: AsyncSession, params: QueryParams, current_user: User
