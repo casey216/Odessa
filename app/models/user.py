@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import StrEnum
 from uuid import UUID
 
 from sqlalchemy import (
@@ -17,7 +18,16 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from uuid_extensions import uuid7
 
 from app.core.database import Base
-from app.schemas.user import UserRole
+
+
+class UserRole(StrEnum):
+    admin = "admin"
+    transport_manager = "transport_manager"
+    fleet_manager = "fleet_manager"
+    maintenance_manager = "maintenance_manager"
+    driver = "driver"
+    conductor = "conductor"
+    viewer = "viewer"
 
 
 class User(Base):
@@ -47,9 +57,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), index=True)
     full_name: Mapped[str] = mapped_column(String(255))
     hashed_password: Mapped[str] = mapped_column(String(255))
-    role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole), default=UserRole.viewer, index=True
-    )
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.viewer, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
     is_super_user: Mapped[bool] = mapped_column(Boolean, default=False)
     avatar_url: Mapped[str | None] = mapped_column(String(500))
@@ -66,9 +74,7 @@ class User(Base):
     created_by: Mapped[UUID | None] = mapped_column(SAUUID, ForeignKey("users.id"))
     updated_by: Mapped[UUID | None] = mapped_column(SAUUID, ForeignKey("users.id"))
 
-    last_login: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), index=True
-    )
+    last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     preferences: Mapped[dict] = mapped_column(JSON, default=dict)
 
     # Relationships

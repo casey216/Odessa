@@ -14,9 +14,9 @@ from app.core.dependencies import (
     require_permission,
 )
 from app.core.permissions import PermissionCode
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.base import QueryParams
-from app.schemas.user import UserCreate, UserFilter, UserRole, UserUpdate
+from app.schemas.user import UserCreate, UserFilter, UserUpdate
 from app.services.user_service import user_service
 
 router = APIRouter()

@@ -4,7 +4,8 @@ from typing import Any
 from sqlalchemy import Select, false, select
 
 from app.core.permissions import PermissionCode
-from app.models import User, UserRole, Vehicle, VehicleAssignment
+from app.models import User, Vehicle, VehicleAssignment
+from app.models.user import UserRole
 from app.schemas.vehicle_assignment import AssignmentStatus
 from app.services.permission_service import permission_service
 

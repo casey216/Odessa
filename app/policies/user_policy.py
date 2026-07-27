@@ -1,5 +1,6 @@
 from app.core.permissions import PermissionCode
-from app.models import User, UserRole
+from app.models import User
+from app.models.user import UserRole
 from app.services.permission_service import permission_service
 
 from .base import Policy

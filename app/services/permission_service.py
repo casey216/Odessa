@@ -6,46 +6,58 @@ from app.core.exceptions import InsufficientPermissionError, PermissionNotFoundE
 from app.core.permissions import PermissionCode
 from app.crud.permission import PermissionCrud
 from app.crud.user_permission import UserPermissionCrud
-from app.models import User, UserPermission, UserRole
+from app.models import User, UserPermission
 from app.models.permission import PermissionEffect
+from app.models.user import UserRole
 
 DEFAULT_ROLE_PERMISSIONS: dict[UserRole, set[PermissionCode]] = {
     UserRole.admin: set(PermissionCode),
-    UserRole.fleet_manager: {
-        # Users
+    UserRole.transport_manager: {
         PermissionCode.user_read,
-        # Vehicle manufacturers
         PermissionCode.manufacturer_create,
         PermissionCode.manufacturer_read,
         PermissionCode.manufacturer_update,
         PermissionCode.manufacturer_delete,
-        # Vehicle models
         PermissionCode.vehicle_model_create,
         PermissionCode.vehicle_model_read,
         PermissionCode.vehicle_model_update,
         PermissionCode.vehicle_model_delete,
-        # Vehicles
         PermissionCode.vehicle_create,
         PermissionCode.vehicle_read,
         PermissionCode.vehicle_update,
         PermissionCode.vehicle_delete,
-        # Assignments
         PermissionCode.vehicle_assignment_create,
         PermissionCode.vehicle_assignment_read,
         PermissionCode.vehicle_assignment_update,
         PermissionCode.vehicle_assignment_delete,
         PermissionCode.activity_read,
     },
+    UserRole.fleet_manager: {
+        PermissionCode.user_read,
+        PermissionCode.manufacturer_create,
+        PermissionCode.manufacturer_read,
+        PermissionCode.manufacturer_update,
+        PermissionCode.manufacturer_delete,
+        PermissionCode.vehicle_model_create,
+        PermissionCode.vehicle_model_read,
+        PermissionCode.vehicle_model_update,
+        PermissionCode.vehicle_model_delete,
+        PermissionCode.vehicle_create,
+        PermissionCode.vehicle_read,
+        PermissionCode.vehicle_update,
+        PermissionCode.vehicle_delete,
+        PermissionCode.vehicle_assignment_read,
+    },
     UserRole.maintenance_manager: {
         PermissionCode.user_read,
         PermissionCode.vehicle_read,
         PermissionCode.vehicle_assignment_read,
-        PermissionCode.activity_read,
     },
     UserRole.driver: {
         PermissionCode.vehicle_read,
         PermissionCode.vehicle_assignment_read,
     },
+    UserRole.conductor: set(),
     UserRole.viewer: {
         PermissionCode.user_read,
         PermissionCode.manufacturer_read,
@@ -97,9 +109,7 @@ class PermissionService:
         return PermissionService._matches(permission_code, default_permissions)
 
     @staticmethod
-    def require_permission_or_raise(
-        user: User, permission_code: PermissionCode
-    ) -> None:
+    def require_permission_or_raise(user: User, permission_code: PermissionCode) -> None:
         if not PermissionService.user_has_permission(user, permission_code):
             raise InsufficientPermissionError(permission_code)
 
@@ -110,9 +120,7 @@ class PermissionService:
         permission_code: PermissionCode,
         effect: PermissionEffect,
     ) -> None:
-        permission = await self.permission_crud.get_by_code(
-            db, code=permission_code.value
-        )
+        permission = await self.permission_crud.get_by_code(db, code=permission_code.value)
         if permission is None:
             raise PermissionNotFoundError("Permision", permission_code.value)
 
@@ -122,11 +130,7 @@ class PermissionService:
         if existing:
             existing.effect = effect
         else:
-            db.add(
-                UserPermission(
-                    user_id=user_id, permission_id=permission.id, effect=effect
-                )
-            )
+            db.add(UserPermission(user_id=user_id, permission_id=permission.id, effect=effect))
 
         await db.commit()
 
@@ -134,15 +138,11 @@ class PermissionService:
         self, db: AsyncSession, user_id: UUID, permission_code: PermissionCode
     ) -> None:
         """Removes the per-user override entirely, falling back to role default."""
-        permission = await self.permission_crud.get_by_code(
-            db, code=permission_code.value
-        )
+        permission = await self.permission_crud.get_by_code(db, code=permission_code.value)
         if permission is None:
             raise PermissionNotFoundError("Permission", permission_code)
 
-        link = await self.user_permission_crud.get_by_user_permission(
-            db, user_id, permission.id
-        )
+        link = await self.user_permission_crud.get_by_user_permission(db, user_id, permission.id)
         if link:
             await db.delete(link)
             await db.commit()

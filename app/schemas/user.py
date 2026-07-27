@@ -7,6 +7,7 @@ from pydantic import ConfigDict, EmailStr, model_validator
 
 from app.core.exceptions.base import ValidationError
 from app.core.exceptions.validation import DateFilterError, PasswordError
+from app.models.user import UserRole
 from app.schemas.base import FormBaseModel
 
 
@@ -14,14 +15,6 @@ class UserBase(FormBaseModel):
     full_name: str
     phone: str | None = None
     department: str | None = None
-
-
-class UserRole(StrEnum):
-    admin = "admin"
-    fleet_manager = "fleet_manager"
-    maintenance_manager = "maintenance_manager"
-    driver = "driver"
-    viewer = "viewer"
 
 
 class UserCreate(UserBase):
@@ -96,11 +89,7 @@ class UserFilter(FormBaseModel):
 
     @model_validator(mode="after")
     def validate_date_range(self) -> Self:
-        if (
-            self.created_from
-            and self.created_to
-            and self.created_from > self.created_to
-        ):
+        if self.created_from and self.created_to and self.created_from > self.created_to:
             raise DateFilterError("created_at")
 
         if (
@@ -114,9 +103,7 @@ class UserFilter(FormBaseModel):
 
     @model_validator(mode="after")
     def validate_last_login_exclusivity(self) -> Self:
-        if self.never_logged_in is not None and (
-            self.last_login_to or self.last_login_from
-        ):
+        if self.never_logged_in is not None and (self.last_login_to or self.last_login_from):
             raise ValidationError(
                 "Cannot set never_logged and logged_in date range simultaneously."
             )
