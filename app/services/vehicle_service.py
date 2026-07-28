@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import Request
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +15,7 @@ from app.models import Tag, User, Vehicle, VehicleAssignment
 from app.policies.vehicle_policy import VehiclePolicy, VehicleReadContext
 from app.schemas.base import QueryParams
 from app.schemas.vehicle import VehicleCreate, VehicleOut, VehicleUpdate
+from app.schemas.vehicle_assignment import AssignmentStatus
 from app.services.base import BaseService
 from app.services.vehicle_model_service import vehicle_model_service
 
@@ -75,6 +77,20 @@ class VehicleService(BaseService[VehicleCrud, Vehicle]):
 
         if params.filters.tag:
             query = query.join(Vehicle.tags).where(Tag.name == params.filters.tag.value)
+
+        if params.filters.assigned_to_user:
+            assignment_exists = (
+                select(1)
+                .where(
+                    VehicleAssignment.vehicle_id == Vehicle.id,
+                    VehicleAssignment.user_id == params.filters.assigned_to_user,
+                    VehicleAssignment.status == AssignmentStatus.ACTIVE,
+                    VehicleAssignment.deleted_at.is_(None),
+                )
+                .exists()
+            )
+
+            query = query.where(assignment_exists)
         query = VehiclePolicy.scope(query, current_user)
 
         return await paginate(request, db, query, params.pagination, self.out_schema)

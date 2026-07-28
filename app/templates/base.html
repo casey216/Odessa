@@ -47,11 +47,6 @@
         <a href="/vehicles/" class="sub-item {% if subpage == 'vehicles'  %}active{% endif %}">Vehicles</a>
         <a href="/vehicle-assignments/" class="sub-item {% if subpage == 'assignments' %}active{% endif %}">Assignments</a>
       </div>
-      <a href="/users" data-tooltip="Users" class="nav-item {% if page == 'users' %}active{% endif %}">
-        <i class="fa-solid fa-users"></i>
-        <span>Users</span>
-      </a>
-
       <div class="nav-section-label">Operations</div>
       <a href="/fuel" data-tooltip="Fuel" class="nav-item {% if page == 'fuel' %}active{% endif %}">
         <i class="fa-solid fa-gas-pump"></i>
@@ -93,8 +88,11 @@
         <i class="fa-solid fa-clock-rotate-left"></i>
         <span>Activity</span>
       </a>
-
       <div class="nav-section-label">Account</div>
+      <a href="/users" data-tooltip="Users" class="nav-item {% if page == 'users' %}active{% endif %}">
+        <i class="fa-solid fa-users"></i>
+        <span>Users</span>
+      </a>
       <a href="/settings" data-tooltip="Settings" class="nav-item {% if page == 'settings' %}active{% endif %}">
         <i class="fa-solid fa-gear"></i>
         <span>Settings</span>

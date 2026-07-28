@@ -22,6 +22,7 @@ class VehicleAssignmentCrud(BaseCrud[VehicleAssignment]):
         "assignment_type": VehicleAssignment.assignment_type,
         "status": VehicleAssignment.status,
         "vehicle_vin": Vehicle.vin,
+        "vehicle_plate": Vehicle.license_plate,
         "assigned_at": VehicleAssignment.assigned_at,
         "unassigned_at": VehicleAssignment.unassigned_at,
         "assigned_by": VehicleAssignment.assigned_by,
@@ -32,7 +33,7 @@ class VehicleAssignmentCrud(BaseCrud[VehicleAssignment]):
     }
     SEARCH_COLUMNS = (
         "vehicle_vin__ilike",
-        "notes__ilike",
+        "vehicle_plate__ilike",
     )
 
     def _base_query(self) -> Select:

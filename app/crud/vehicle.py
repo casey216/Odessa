@@ -39,9 +39,7 @@ class VehicleCrud(BaseCrud[Vehicle]):
             .join(self.MODEL.vehicle_model)
             .join(VehicleModel.manufacturer)
             .options(
-                contains_eager(self.MODEL.vehicle_model).contains_eager(
-                    VehicleModel.manufacturer
-                ),
+                contains_eager(self.MODEL.vehicle_model).contains_eager(VehicleModel.manufacturer),
                 selectinload(self.MODEL.tags),
             )
         )

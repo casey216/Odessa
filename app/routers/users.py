@@ -17,7 +17,9 @@ from app.core.permissions import PermissionCode
 from app.models.user import User, UserRole
 from app.schemas.base import QueryParams
 from app.schemas.user import UserCreate, UserFilter, UserUpdate
+from app.services.permission_service import permission_service
 from app.services.user_service import user_service
+from app.services.vehicle_assignment_service import vehicle_assignment_service
 
 router = APIRouter()
 
@@ -100,6 +102,10 @@ async def read_user(
     db: AsyncSession = Depends(get_db),
 ):
     user = await user_service.get_or_403(db, user_id, current_user)
+    vehicles = await vehicle_assignment_service.get_user_vehicles(db, user_id)
+    default_permissions = sorted(await permission_service.get_role_permissions(user.role))
+    all_permissions = sorted(PermissionCode)
+
     return templates.TemplateResponse(
         "users/user_detail.html",
         {
@@ -107,6 +113,10 @@ async def read_user(
             "user": current_user,
             "page": "users",
             "target_user": user,
+            "vehicles": vehicles,
+            "default_permissions": default_permissions,
+            "all_permissions": all_permissions,
+            "permission_overrides": user.permission_links,
         },
     )
 

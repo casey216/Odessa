@@ -1,7 +1,9 @@
 from datetime import UTC, datetime
+from typing import List
 from uuid import UUID
 
 from fastapi import Request
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +12,7 @@ from app.core.pagination import PaginatedResponse, paginate
 from app.core.utils import is_unique_violation, parse_unique_violation
 from app.crud.vehicle_assignment import VehicleAssignmentCrud
 from app.models.user import User
-from app.models.vehicle import VehicleStatus
+from app.models.vehicle import Vehicle, VehicleStatus
 from app.models.vehicle_assignment import (
     AssignmentStatus,
     AssignmentType,
@@ -62,7 +64,8 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud, VehicleAssignm
         )
         if existing_for_vehicle is not None:
             raise ConflictError(
-                f"Vehicle already has an active " f"{data.assignment_type.value} assignment."
+                f"Vehicle already has an active "
+                f"{data.assignment_type.value.replace("_", " ")} assignment."
             )
 
         if isinstance(data, DriverAssignmentCreate):
@@ -71,11 +74,11 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud, VehicleAssignm
             )
             if existing_for_driver is not None:
                 raise ConflictError(
-                    "User already has an active driver assignment " "on another vehicle."
+                    "User already has an active driver assignment on another vehicle."
                 )
             if vehicle.status != VehicleStatus.AVAILABLE:
                 raise ConflictError(
-                    f"Vehicle is {vehicle.status.value}, not available " "for a driver assignment."
+                    f"Vehicle is {vehicle.status.value}, not available for a driver assignment."
                 )
             if data.odometer_out_km < vehicle.odometer_km:
                 raise ValidationError(
@@ -188,6 +191,36 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud, VehicleAssignm
             db, id, current_user, AssignmentStatus.CANCELLED, update_data
         )
 
+    async def get_user_vehicles(
+        self,
+        db: AsyncSession,
+        user_id: UUID,
+    ) -> List[Vehicle]:
+        stmt = (
+            select(Vehicle)
+            .join(VehicleAssignment, VehicleAssignment.vehicle_id == Vehicle.id)
+            .where(
+                VehicleAssignment.user_id == user_id,
+                VehicleAssignment.status == AssignmentStatus.ACTIVE,
+                VehicleAssignment.deleted_at.is_(None),
+            )
+        )
+
+        return list((await db.scalars(stmt)).all())
+
+    async def get_vehicle_current_user(self, db: AsyncSession, vehicle_id: UUID) -> User | None:
+        stmt = (
+            select(User)
+            .join(VehicleAssignment, VehicleAssignment.user_id == User.id)
+            .where(
+                VehicleAssignment.vehicle_id == vehicle_id,
+                VehicleAssignment.status == AssignmentStatus.ACTIVE,
+                VehicleAssignment.deleted_at.is_(None),
+            )
+        )
+
+        return await db.scalar(stmt)
+
     async def _end_assignment(
         self,
         db: AsyncSession,
@@ -222,15 +255,9 @@ class VehicleAssignmentService(BaseService[VehicleAssignmentCrud, VehicleAssignm
         if instance.assignment_type == AssignmentType.DRIVER:
             vehicle = await vehicle_service.get_or_404(db, instance.vehicle_id)
             vehicle_changed = False
-            # Only revert if still in_use — don't clobber a status someone
-            # else set independently (e.g. maintenance) while the driver
-            # assignment was active.
             if vehicle.status == VehicleStatus.IN_USE:
                 vehicle.status = VehicleStatus.AVAILABLE
                 vehicle_changed = True
-            # Cancel doesn't collect an odometer_in_km, so there's nothing
-            # to sync in that case — the vehicle's reading just stays at
-            # whatever odometer_out_km set it to.
             if (
                 instance.odometer_in_km is not None
                 and instance.odometer_in_km != vehicle.odometer_km

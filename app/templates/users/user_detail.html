@@ -11,11 +11,11 @@
 
 {% block content %}
 {% set role_colors = {
-  'admin': 'badge-error',
-  'fleet_manager': 'badge-warning',
-  'maintenance_manager': 'badge-success',
-  'driver': 'badge-info',
-  'viewer': 'badge-ghost',
+'admin': 'badge-error',
+'fleet_manager': 'badge-warning',
+'maintenance_manager': 'badge-success',
+'driver': 'badge-info',
+'viewer': 'badge-ghost',
 } %}
 
 <div class="page-header">
@@ -37,17 +37,18 @@
     </div>
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;">
-  <button type="button" class="btn btn-secondary" hx-post="/users/{{ target_user.id }}/{{ 'deactivate' if target_user.is_active else 'activate' }}">
-    <i class="fa-solid fa-{{ 'toggle-off' if target_user.is_active else 'toggle-on' }}"></i>
-    {{ 'Deactivate' if target_user.is_active else 'Activate' }}
-  </button>
-  <a href="/users/{{ target_user.id }}/edit" class="btn btn-primary">
-    <i class="fa-solid fa-pen"></i> Edit
-  </a>
-  <button type="button" class="btn btn-danger" hx-delete="/users/{{ target_user.id }}"
-    hx-confirm="Delete {{ target_user.name }}?" hx-on::before-swap="redirectAfterDelete('/users', event)">
-    <i class="fa-solid fa-trash"></i> Delete
-  </button>
+    <button type="button" class="btn btn-secondary"
+      hx-post="/users/{{ target_user.id }}/{{ 'deactivate' if target_user.is_active else 'activate' }}">
+      <i class="fa-solid fa-{{ 'toggle-off' if target_user.is_active else 'toggle-on' }}"></i>
+      {{ 'Deactivate' if target_user.is_active else 'Activate' }}
+    </button>
+    <a href="/users/{{ target_user.id }}/edit" class="btn btn-primary">
+      <i class="fa-solid fa-pen"></i> Edit
+    </a>
+    <button type="button" class="btn btn-danger" hx-delete="/users/{{ target_user.id }}"
+      hx-confirm="Delete {{ target_user.name }}?" hx-on::before-swap="redirect('/users', event)">
+      <i class="fa-solid fa-trash"></i> Delete
+    </button>
   </div>
 </div>
 
@@ -55,7 +56,8 @@
   <!-- Info card -->
   <div class="card">
     <div class="card-header">
-      <div class="card-title"><i class="fa-solid fa-id-card" style="margin-right:8px;color:var(--accent)"></i>Profile</div>
+      <div class="card-title"><i class="fa-solid fa-id-card" style="margin-right:8px;color:var(--accent)"></i>Profile
+      </div>
     </div>
     <div class="info-grid" style="grid-template-columns:1fr 1fr;">
       <div class="info-item">
@@ -76,11 +78,13 @@
       </div>
       <div class="info-item">
         <div class="info-label">Member Since</div>
-        <div class="info-value">{{ target_user.created_at.strftime('%b %d, %Y') if target_user.created_at else '—' }}</div>
+        <div class="info-value">{{ target_user.created_at.strftime('%b %d, %Y') if target_user.created_at else '—' }}
+        </div>
       </div>
       <div class="info-item">
         <div class="info-label">Last Login</div>
-        <div class="info-value">{{ target_user.last_login.strftime('%b %d, %Y %H:%M') if target_user.last_login else 'Never' }}</div>
+        <div class="info-value">{{ target_user.last_login.strftime('%b %d, %Y %H:%M') if target_user.last_login else
+          'Never' }}</div>
       </div>
     </div>
   </div>
@@ -88,24 +92,34 @@
   <!-- Assigned vehicles -->
   <div class="card">
     <div class="card-header">
-      <div class="card-title"><i class="fa-solid fa-car" style="margin-right:8px;color:var(--accent)"></i>Assigned Vehicles</div>
+      <div class="card-title"><i class="fa-solid fa-car" style="margin-right:8px;color:var(--accent)"></i>Assigned
+        Vehicles</div>
     </div>
     {% if vehicles %}
     <div style="display:flex;flex-direction:column;gap:10px;">
-      {% for v in vehicles %}
-      <a href="/vehicles/{{ v.id }}" style="text-decoration:none;display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-hover);border-radius:var(--radius-sm);">
-        <div style="width:36px;height:36px;background:var(--accent-subtle);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+      {% for v in vehicles[:4] %}
+      <a href="/vehicles/{{ v.id }}"
+        style="text-decoration:none;display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-hover);border-radius:var(--radius-sm);">
+        <div
+          style="width:36px;height:36px;background:var(--accent-subtle);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--accent);">
           <i class="fa-solid fa-car"></i>
         </div>
         <div>
           <div class="mono" style="font-weight:600;color:var(--accent);">{{ v.license_plate }}</div>
           <div style="font-size:12px;color:var(--text-secondary);">{{ v.year }} {{ v.make }} {{ v.model }}</div>
         </div>
-        <span class="badge {% if v.status.value == 'active' %}badge-success{% elif v.status.value == 'in_maintenance' %}badge-warning{% else %}badge-ghost{% endif %}" style="margin-left:auto;">
+        <span
+          class="badge {% if v.status.value == 'active' %}badge-success{% elif v.status.value == 'in_maintenance' %}badge-warning{% else %}badge-ghost{% endif %}"
+          style="margin-left:auto;">
           {{ v.status.value.replace('_',' ').title() }}
         </span>
       </a>
       {% endfor %}
+      {% if vehicles|length > 4 %}
+      <a href="/vehicles?assigned_to_user={{ target_user.id }}" class="btn btn-secondary" style="margin-top:8px;">
+        View all {{ vehicles|length }} vehicles →
+      </a>
+      {% endif %}
     </div>
     {% else %}
     <div class="empty-state" style="padding:30px;">
@@ -115,5 +129,81 @@
     </div>
     {% endif %}
   </div>
+  <!-- Permissions -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="fa-solid fa-shield-halved"
+          style="margin-right:8px;color:var(--accent)"></i>Permissions</div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <div class="info-label" style="margin-bottom:10px;">
+        Default — granted by the {{ target_user.role.value.replace('_',' ').title() }} role
+      </div>
+      {% if default_permissions %}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        {% for perm in default_permissions %}
+        <span class="badge badge-ghost">{{ perm.value }}</span>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="color:var(--text-tertiary);font-size:13px;">This role has no default permissions.</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <div class="info-label" style="margin-bottom:10px;">Overrides</div>
+      {% if permission_overrides %}
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        {% for override in permission_overrides %}
+        <div
+          style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-hover);border-radius:var(--radius-sm);">
+          <span class="badge {{ 'badge-success' if override.effect.value == 'allow' else 'badge-error' }}"
+            style="min-width:70px;text-align:center;">
+            {{ 'Allow' if override.effect.value == 'allow' else 'Deny' }}
+          </span>
+          <span style="flex:1;">{{ override.permission.code }}</span>
+          <button type="button" class="btn btn-sm btn-secondary btn-icon" data-tooltip="Remove override"
+            hx-post="/users/{{ target_user.id }}/permissions/revoke"
+            hx-on::before-swap="redirect('/users/{{ target_user.id }}', event)"
+            hx-confirm="Remove this override? {{ target_user.full_name }} will fall back to the role default for this permission."
+            hx-swap="none"
+            hx-vals='{"permission_code": "{{ override.permission.code }}"}'>
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="color:var(--text-tertiary);font-size:13px;">No overrides — this user has exactly their role's default
+        permissions.</p>
+      {% endif %}
+    </div>
+
+    <form
+      style="display:flex;gap:10px;align-items:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap;">
+      <div class="form-group" style="margin-bottom:0;flex:1;min-width:0;max-width:280px;">
+        <label class="form-label">Permission</label>
+        <select name="permission_code" id="override-permission-select" class="form-select" style="width:100%;" required>
+          <option value="" disabled selected>Select permission</option>
+          {% for perm in all_permissions %}
+          <option value="{{ perm }}">{{ perm.value }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="button" class="btn btn-primary" hx-post="/users/{{ target_user.id }}/permissions/grant"
+        hx-include="#override-permission-select"' hx-swap="none"
+        hx-on::before-swap="redirect('/users/{{ target_user.id }}', event)">
+        <i class="fa-solid fa-check"></i> Grant
+      </button>
+      <button type="button" class="btn btn-danger" hx-post="/users/{{ target_user.id }}/permissions/deny"
+        hx-include="#override-permission-select"' hx-swap="none"
+        hx-on::before-swap="redirect('/users/{{ target_user.id }}', event)">
+        <i class="fa-solid fa-ban"></i> Deny
+      </button>
+    </form>
+  </div>
 </div>
+
+
 {% endblock %}

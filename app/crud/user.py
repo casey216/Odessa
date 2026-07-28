@@ -1,8 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from sqlalchemy.sql import Select
 
 from app.crud.base import BaseCrud
-from app.models.user import User
+from app.models import User, UserPermission
 
 
 class UserCrud(BaseCrud[User]):
@@ -25,6 +27,11 @@ class UserCrud(BaseCrud[User]):
         "phone__ilike",
         "department__ilike",
     )
+
+    def _base_query(self) -> Select:
+        return select(self.MODEL).options(
+            selectinload(self.MODEL.permission_links).selectinload(UserPermission.permission)
+        )
 
     async def get_by_email(
         self,

@@ -40,7 +40,7 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(ValidationError)
     async def handle_validation(request: Request, exc: ValidationError) -> Response:
-        resp = Response(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        resp = Response(status_code=status.HTTP_400_BAD_REQUEST)
         resp.headers["HX-Flash"] = f"error:{str(exc)}"
         return resp
 

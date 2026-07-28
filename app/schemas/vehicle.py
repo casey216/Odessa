@@ -125,6 +125,7 @@ class VehicleFilter(FormBaseModel):
     search: str | None = None
 
     is_active: bool | None = None
+    assigned_to_user: UUID | None = None
     status: VehicleStatus | None = None
     vehicle_model_id: UUID | None = None
     manufacturer_id: UUID | None = None

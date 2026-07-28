@@ -1,7 +1,7 @@
-# routes
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Form, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,10 +18,10 @@ class PermissionCodeRequest(BaseModel):
     permission_code: PermissionCode
 
 
-@router.post("/grant", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/grant", status_code=status.HTTP_200_OK)
 async def grant_permission(
     user_id: UUID,
-    body: PermissionCodeRequest,
+    body: Annotated[PermissionCodeRequest, Form()],
     db: AsyncSession = Depends(get_db),
     _current_user: User = Depends(require_permission(PermissionCode.permission_grant)),
 ) -> None:
@@ -30,10 +30,10 @@ async def grant_permission(
     )
 
 
-@router.post("/deny", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/deny", status_code=status.HTTP_200_OK)
 async def deny_permission(
     user_id: UUID,
-    body: PermissionCodeRequest,
+    body: Annotated[PermissionCodeRequest, Form()],
     db: AsyncSession = Depends(get_db),
     _current_user: User = Depends(require_permission(PermissionCode.permission_grant)),
 ) -> None:
@@ -42,10 +42,10 @@ async def deny_permission(
     )
 
 
-@router.post("/revoke", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/revoke/", status_code=status.HTTP_200_OK)
 async def revoke_permission(
     user_id: UUID,
-    body: PermissionCodeRequest,
+    body: Annotated[PermissionCodeRequest, Form()],
     db: AsyncSession = Depends(get_db),
     _current_user: User = Depends(require_permission(PermissionCode.permission_revoke)),
 ) -> None:

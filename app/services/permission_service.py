@@ -113,6 +113,9 @@ class PermissionService:
         if not PermissionService.user_has_permission(user, permission_code):
             raise InsufficientPermissionError(permission_code)
 
+    async def get_role_permissions(self, role: UserRole) -> set:
+        return DEFAULT_ROLE_PERMISSIONS.get(role, set())
+
     async def set_permission_override(
         self,
         db: AsyncSession,
