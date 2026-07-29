@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from decimal import Decimal
 from enum import Enum as PyEnum
 from typing import TYPE_CHECKING
 from uuid import UUID
@@ -70,7 +71,7 @@ class Vehicle(Base):
 
     odometer_km: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     purchase_date: Mapped[date | None] = mapped_column(Date)
-    purchase_price: Mapped[float | None] = mapped_column(Numeric(12, 2))
+    purchase_price: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -96,9 +97,7 @@ class Vehicle(Base):
     vehicle_model: Mapped["VehicleModel"] = relationship(
         foreign_keys=[vehicle_model_id], back_populates="vehicles"
     )
-    tags: Mapped[list["Tag"]] = relationship(
-        secondary=vehicle_tags, back_populates="vehicles"
-    )
+    tags: Mapped[list["Tag"]] = relationship(secondary=vehicle_tags, back_populates="vehicles")
     assignments = relationship(
         "VehicleAssignment",
         back_populates="vehicle",
