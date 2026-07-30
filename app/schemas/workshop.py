@@ -3,30 +3,10 @@ from enum import StrEnum
 from typing import Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, model_validator
+from core.exceptions import DateFilterError
+from pydantic import model_validator
 
-from app.core.exceptions.validation import DateFilterError
-from app.schemas.base import FormBaseModel
-
-
-class ManufacturerCreate(FormBaseModel):
-    name: str
-
-
-class ManufacturerUpdate(FormBaseModel):
-    name: str | None = None
-
-
-class ManufacturerOut(BaseModel):
-    id: UUID
-    name: str
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime | None
-    created_by: UUID | None
-    updated_by: UUID | None
-
-    model_config = {"from_attributes": True}
+from .base import FormBaseModel
 
 
 class SortField(StrEnum):
@@ -35,11 +15,37 @@ class SortField(StrEnum):
     UPDATED_AT = "updated_at"
 
 
-class ManufacturerFilter(FormBaseModel):
-    search: str | None = None
+class WorkshopCreate(FormBaseModel):
+    name: str
+    address: str | None
+    phone: str | None
 
-    is_active: bool | None = None
-    created_by: UUID | None = None
+
+class WorkshopUpdate(FormBaseModel):
+    name: str | None
+    address: str | None
+    phone: str | None
+
+
+class WorkshopOut(FormBaseModel):
+    id: UUID
+    name: str
+    address: str
+    phone: str
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    created_by: datetime
+    updated_by: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class WorkshopFilter(FormBaseModel):
+    search: str | None
+
+    is_active: str | None
+    created_by: UUID | None
     created_from: date | None = None
     created_to: date | None = None
     include_deleted: bool | None = None
