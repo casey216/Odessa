@@ -6,6 +6,7 @@ from .user import User, UserRole
 from .vehicle import Vehicle
 from .vehicle_assignment import VehicleAssignment
 from .vehicle_model import VehicleModel
+from .workshop import Workshop
 
 __all__ = [
     "ActivityLog",
@@ -19,4 +20,5 @@ __all__ = [
     "VehicleAssignment",
     "VehicleModel",
     "vehicle_tags",
+    "Workshop",
 ]
