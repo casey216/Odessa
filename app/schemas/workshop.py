@@ -3,8 +3,9 @@ from enum import StrEnum
 from typing import Literal, Self
 from uuid import UUID
 
-from core.exceptions import DateFilterError
 from pydantic import model_validator
+
+from app.core.exceptions import DateFilterError
 
 from .base import FormBaseModel
 
@@ -42,10 +43,10 @@ class WorkshopOut(FormBaseModel):
 
 
 class WorkshopFilter(FormBaseModel):
-    search: str | None
+    search: str | None = None
 
-    is_active: str | None
-    created_by: UUID | None
+    is_active: bool = True
+    created_by: UUID | None = None
     created_from: date | None = None
     created_to: date | None = None
     include_deleted: bool | None = None

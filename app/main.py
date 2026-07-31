@@ -20,6 +20,7 @@ from app.routers import (
     vehicle,
     vehicle_assignment,
     vehicle_model,
+    workshop,
 )
 from app.scripts.sync_permissions import sync_permissions
 
@@ -65,6 +66,7 @@ app.include_router(
     prefix="/vehicle-assignments",
     tags=["vehicle assignments"],
 )
+app.include_router(workshop.router, prefix="/workshops", tags=["workshops"])
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(permission.router)
 app.include_router(activity.router, prefix="/activity", tags=["activity logs"])

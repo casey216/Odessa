@@ -1,0 +1,32 @@
+{% import "shared/pagination.html" as pager %}
+{% if workshops %}
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="workshop-table-body">
+            {% include "workshops/workshop_rows.html" %}
+        </tbody>
+    </table>
+</div>
+{{ pager.render(pagination, "workshop-list-content", "workshop-filters", "/workshops") }}
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <i class="fa-solid fa-industry"></i>
+        <h3>No workshops yet</h3>
+        <p>Add your first workshop to get started.</p>
+        <a href="/workshops/new" class="btn btn-primary" style="margin-top:16px"><i class="fa-solid fa-plus"></i>
+            Add
+            Workshop</a>
+    </div>
+</div>
+{% endif %}

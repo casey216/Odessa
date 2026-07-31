@@ -47,6 +47,14 @@
         <a href="/vehicles/" class="sub-item {% if subpage == 'vehicles'  %}active{% endif %}">Vehicles</a>
         <a href="/vehicle-assignments/" class="sub-item {% if subpage == 'assignments' %}active{% endif %}">Assignments</a>
       </div>
+      <div class="nav-item has-sub {% if page == 'locations' %}active sub-open{% endif %}" onclick="toggleSubmenu(this)">
+        <i class="fa-solid fa-location-dot"></i>
+        <span>Locations</span>
+        <i class="fa-solid fa-chevron-down sub-chevron"></i>
+      </div>
+      <div class="submenu {% if page == 'locations' %}sub-open{% endif %}">
+        <a href="/workshops/" class="sub-item {% if subpage == 'workshops' %}active{% endif %}">Workshops</a>
+      </div>
       <div class="nav-section-label">Operations</div>
       <a href="/fuel" data-tooltip="Fuel" class="nav-item {% if page == 'fuel' %}active{% endif %}">
         <i class="fa-solid fa-gas-pump"></i>

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Workshops — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+  <span class="current"><i class="fa-solid fa-industry" style="margin-right:6px"></i>Workshops</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Workshops</h1>
+    <p class="page-subtitle">{{ pagination["total"] }} workshop{{ 's' if pagination["total"] != 1 }}</p>
+  </div>
+  <a href="/workshops/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Workshop</a>
+</div>
+
+<!-- Filters -->
+<form id="workshop-filters" class="filters-bar" hx-get="/workshops" hx-target="#workshop-list-content"
+  hx-trigger="change from:select, keyup changed delay:300ms from:input">
+  <div class="search-wrapper">
+    <i class="fa-solid fa-search search-icon"></i>
+    <input type="text" class="search-input" placeholder="Search workshop" name="search" value="{{ search or '' }}">
+  </div>
+  <select class="form-select" name="is_active" style="max-width:220px;">
+    <option value="">All workshops</option>
+    <option value="{{ true }}" {% if status_filter==true %}selected{% endif %}>Active</option>
+    <option value="{{ false }}" {% if status_filter==false %}selected{% endif %}>Inactive</option>
+  </select>
+</form>
+
+<div id="workshop-list-content">
+  {% include "workshops/workshop_list_content.html" %}
+</div>
+{% endblock %}

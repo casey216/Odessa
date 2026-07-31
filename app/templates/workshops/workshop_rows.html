@@ -1,0 +1,43 @@
+{% for workshop in workshops %}
+<tr id="workshop-row-{{ workshop.id }}">
+  <td>
+    <a href="/workshops/{{ workshop.id }}"
+      style="color:var(--text-primary);text-decoration:none;font-weight:500;">
+      {{ workshop.name }}
+    </a>
+  </td>
+  <td style="color:var(--text-secondary);">{{ workshop.address }}</td>
+  <td style="color:var(--text-secondary);">{{ workshop.phone }}</td>
+  <td>
+    {% if workshop.is_active %}
+    <span class="badge badge-success">Active</span>
+    {% else %}
+    <span class="badge badge-ghost">Inactive</span>
+    {% endif %}
+  </td>
+  <td style="color:var(--text-secondary);">{{ workshop.created_at | fmt_date }}</td>
+  <td>
+    <div style="display:flex;gap:6px;">
+      <a href="/workshops/{{ workshop.id }}" class="btn btn-sm btn-secondary btn-icon" data-tooltip="View">
+        <i class="fa-solid fa-eye"></i>
+      </a>
+      <a href="/workshops/{{ workshop.id }}/edit" class="btn btn-sm btn-secondary btn-icon" data-tooltip="Edit">
+        <i class="fa-solid fa-pen"></i>
+      </a>
+      <button type="button" class="btn btn-sm btn-secondary btn-icon"
+        data-tooltip="{{ 'Deactivate' if workshop.is_active else 'Activate' }}"
+        hx-post="/workshops/{{ workshop.id }}/{{ 'deactivate' if workshop.is_active else 'activate' }}"
+        hx-target="closest tr"
+        hx-swap="outerHTML">
+        <i class="fa-solid fa-{{ 'toggle-off' if workshop.is_active else 'toggle-on' }}"></i>
+      </button>
+      <button class="btn btn-sm btn-danger btn-icon" data-tooltip="Delete"
+        hx-delete="/workshops/{{ workshop.id }}"
+        hx-confirm="Delete {{ workshop.name }}?"
+        hx-on::before-swap="redirect('/workshops', event)">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
+  </td>
+</tr>
+{% endfor %}
