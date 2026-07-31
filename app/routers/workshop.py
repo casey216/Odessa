@@ -158,3 +158,18 @@ async def delete_workshop(
     current_user: Annotated[User, Depends(require_permission(PermissionCode.workshop_delete))],
 ):
     return await workshop_service.delete(db, workshop_id)
+
+
+@router.post("/{workshop_id}/activate", response_class=HTMLResponse)
+async def activate_workshop(
+    request: Request,
+    templates: TempDpnds,
+    db: Annotated[AsyncSession, Depends(get_audited_db)],
+    workshop_id: UUID,
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.workshop_update))],
+):
+    workshop = await workshop_service.set_active_status(db, workshop_id, is_active=True)
+    return templates.TemplateResponse(
+        "workshops/workshop_rows.html",
+        {"request": request, "workshops": [workshop]},
+    )
