@@ -173,3 +173,18 @@ async def activate_workshop(
         "workshops/workshop_rows.html",
         {"request": request, "workshops": [workshop]},
     )
+
+
+@router.post("/workshop_id}/deactivate", response_class=HTMLResponse)
+async def deactivate_workshop(
+    request: Request,
+    templates: TempDpnds,
+    db: Annotated[AsyncSession, Depends(get_audited_db)],
+    workshop_id: UUID,
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.workshop_update))],
+):
+    workshop = await workshop_service.set_active_status(db, workshop_id, is_active=False)
+    return templates.TemplateResponse(
+        "workshops/workshop_rows.html",
+        {"request": request, "workshops": [workshop]},
+    )
