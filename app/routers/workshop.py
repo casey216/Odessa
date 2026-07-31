@@ -149,3 +149,12 @@ async def update_workshop(
     response = HTMLResponse(content="")
     response.headers["HX-Redirect"] = f"/workshops/{workshop.id}"
     return response
+
+
+@router.delete("/{workshop_id}", status_code=status.HTTP_200_OK)
+async def delete_workshop(
+    db: Annotated[AsyncSession, Depends(get_audited_db)],
+    workshop_id: UUID,
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.workshop_delete))],
+):
+    return await workshop_service.delete(db, workshop_id)
