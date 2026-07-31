@@ -138,6 +138,8 @@ class BaseCrud[ModelT: Base]:
 
     async def soft_delete(self, db: AsyncSession, id: UUID) -> None:
         instance = await self.get_or_404(db, id)
+        if not hasattr(instance, "deleted_at"):
+            raise NotImplementedError(f"{self.MODEL.__name__} does not support soft delete")
         setattr(instance, "deleted_at", datetime.now(UTC))
 
     async def restore(self, db: AsyncSession, id: UUID) -> ModelT:
