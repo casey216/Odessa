@@ -58,3 +58,21 @@ async def list_workshops(
         return templates.TemplateResponse("workshops/workshop_list_content.html", context)
 
     return templates.TemplateResponse("workshops/workshops.html", context)
+
+
+@router.get("/new", response_class=HTMLResponse)
+async def new_workshop_form(
+    request: Request,
+    templates: TempDpnds,
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.workshop_create))],
+):
+    return templates.TemplateResponse(
+        "workshops/workshop_form.html",
+        {
+            "request": request,
+            "workshop": None,
+            "user": current_user,
+            "page": "locations",
+            "subpage": "workshops",
+        },
+    )

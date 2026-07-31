@@ -18,21 +18,21 @@ class SortField(StrEnum):
 
 class WorkshopCreate(FormBaseModel):
     name: str
-    address: str | None
-    phone: str | None
+    address: str | None = None
+    phone: str | None = None
 
 
 class WorkshopUpdate(FormBaseModel):
-    name: str | None
-    address: str | None
-    phone: str | None
+    name: str | None = None
+    address: str | None = None
+    phone: str | None = None
 
 
 class WorkshopOut(FormBaseModel):
     id: UUID
     name: str
-    address: str
-    phone: str
+    address: str | None = None
+    phone: str | None = None
     is_active: bool
     created_at: datetime
     updated_at: datetime
