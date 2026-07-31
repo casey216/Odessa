@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
@@ -91,3 +92,24 @@ async def create_workshop(
     response = HTMLResponse(content="", status_code=status.HTTP_201_CREATED)
     response.headers["HX-Redirect"] = "/workshops"
     return response
+
+
+@router.get("/{workshop_id}", response_class=HTMLResponse)
+async def read_workshop(
+    request: Request,
+    templates: TempDpnds,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    workshop_id: UUID,
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.workshop_read))],
+):
+    workshop = await workshop_service.get_or_404(db, workshop_id)
+    return templates.TemplateResponse(
+        "workshops/workshop_detail.html",
+        {
+            "request": request,
+            "workshop": workshop,
+            "user": current_user,
+            "page": "locations",
+            "subpage": "workshops",
+        },
+    )

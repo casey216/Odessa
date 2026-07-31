@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{{ workshop.name }} — FleetMS{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+  <a href="/workshops">Workshops</a>
+  <span class="sep">/</span>
+  <span class="current">{{ workshop.name }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div
+      style="width:52px;height:52px;background:var(--accent-subtle);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--accent);">
+      <i class="fa-solid fa-industry"></i>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <h1 class="page-title">{{ workshop.name }}</h1>
+        <span class="badge {{ 'badge-success' if workshop.is_active else 'badge-ghost' }}">
+          {{ 'Active' if workshop.is_active else 'Inactive' }}
+        </span>
+      </div>
+      <p class="page-subtitle">Added {{ workshop.created_at | fmt_date }}</p>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button type="button" class="btn btn-secondary"
+    hx-post="/workshops/{{ workshop.id }}/{{ 'deactivate' if workshop.is_active else 'activate' }}"
+    hx-on::before-swap="redirect('/workshops/{{ workshop.id }}', event)">
+      <i class="fa-solid fa-{{ 'toggle-off' if workshop.is_active else 'toggle-on' }}"></i>
+      {{ 'Deactivate' if workshop.is_active else 'Activate' }}
+    </button>
+    <a href="/workshops/{{ workshop.id }}/edit" class="btn btn-primary"><i class="fa-solid fa-pen"></i> Edit</a>
+      <button type="button" class="btn btn-danger"
+        hx-delete="/workshops/{{ workshop.id }}"
+        hx-confirm="Delete {{ workshop.name }}?"
+        hx-on::before-swap="redirect('/workshops', event)">
+        <i class="fa-solid fa-trash"></i> Delete
+      </button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="info-grid">
+    <div class="info-item">
+      <div class="info-label">Name</div>
+      <div class="info-value">{{ workshop.name }}</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Address</div>
+      <div class="info-value">{{ workshop.address }}</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Phone</div>
+      <div class="info-value">{{ workshop.phone }}</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Status</div>
+      <div class="info-value">{{ 'Active' if workshop.is_active else 'Inactive' }}</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Created</div>
+      <div class="info-value">{{ workshop.created_at | fmt_date }}</div>
+    </div>
+    {% if workshop.updated_at %}
+    <div class="info-item">
+      <div class="info-label">Last Updated</div>
+      <div class="info-value">{{ workshop.updated_at | fmt_date }}</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function toggleActive() {
+    const action = "{{ 'deactivate' if workshop.is_active else 'activate' }}";
+    fetch(`/workshops/{{ workshop.id }}/${action}`, { method: 'POST' })
+      .then(res => {
+        if (res.ok) location.reload();
+      });
+  }
+</script>
+{% endblock %}
