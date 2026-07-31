@@ -6,8 +6,8 @@
       {{ workshop.name }}
     </a>
   </td>
-  <td style="color:var(--text-secondary);">{{ workshop.address }}</td>
-  <td style="color:var(--text-secondary);">{{ workshop.phone }}</td>
+  <td style="color:var(--text-secondary);">{{ workshop.address if workshop.address else '' }}</td>
+  <td style="color:var(--text-secondary);">{{ workshop.phone if workshop.phone else '' }}</td>
   <td>
     {% if workshop.is_active %}
     <span class="badge badge-success">Active</span>

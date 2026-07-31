@@ -1,11 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import (
+    get_audited_db,
     get_db,
     get_query_params,
     get_template,
@@ -16,6 +17,7 @@ from app.core.permissions import PermissionCode
 from app.models.user import User
 from app.schemas.base import QueryParams
 from app.schemas.workshop import (
+    WorkshopCreate,
     WorkshopFilter,
 )
 from app.services.workshop_service import workshop_service
@@ -76,3 +78,16 @@ async def new_workshop_form(
             "subpage": "workshops",
         },
     )
+
+
+@router.post("/", response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
+async def create_workshop(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_audited_db)],
+    workshop_in: Annotated[WorkshopCreate, Form()],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.workshop_create))],
+):
+    await workshop_service.create(db, workshop_in, current_user)
+    response = HTMLResponse(content="", status_code=status.HTTP_201_CREATED)
+    response.headers["HX-Redirect"] = "/workshops"
+    return response

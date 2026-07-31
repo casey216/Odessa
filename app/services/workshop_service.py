@@ -26,7 +26,7 @@ class WorkshopService(BaseService[WorkshopCrud, Workshop]):
     out_schema = WorkshopOut
 
     async def create(self, db: AsyncSession, data: WorkshopCreate, current_user: User) -> Workshop:
-        existing = self.crud.get_by_name(db, name=data.name)
+        existing = await self.crud.get_by_name(db, name=data.name)
         if existing:
             raise ConflictError(f"Workshop {data.name} already exists!")
 

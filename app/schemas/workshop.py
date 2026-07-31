@@ -31,13 +31,13 @@ class WorkshopUpdate(FormBaseModel):
 class WorkshopOut(FormBaseModel):
     id: UUID
     name: str
-    address: str | None = None
-    phone: str | None = None
+    address: str | None
+    phone: str | None
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    created_by: datetime
-    updated_by: datetime
+    created_by: UUID | None
+    updated_by: UUID | None
 
     model_config = {"from_attributes": True}
 
