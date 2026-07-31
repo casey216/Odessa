@@ -20,6 +20,7 @@ from app.schemas.base import QueryParams
 from app.schemas.workshop import (
     WorkshopCreate,
     WorkshopFilter,
+    WorkshopUpdate,
 )
 from app.services.workshop_service import workshop_service
 
@@ -113,3 +114,38 @@ async def read_workshop(
             "subpage": "workshops",
         },
     )
+
+
+@router.get("/{workshop_id}/edit", response_class=HTMLResponse)
+async def edit_workshop_form(
+    request: Request,
+    templates: TempDpnds,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    workshop_id: UUID,
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.workshop_update))],
+):
+    workshop = await workshop_service.get_or_404(db, workshop_id)
+    return templates.TemplateResponse(
+        "workshops/workshop_form.html",
+        {
+            "request": request,
+            "workshop": workshop,
+            "user": current_user,
+            "page": "locations",
+            "subpage": "workshops",
+        },
+    )
+
+
+@router.put("/{workshop_id}", response_class=HTMLResponse)
+async def update_workshop(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_audited_db)],
+    workshop_id: UUID,
+    workshop_in: Annotated[WorkshopUpdate, Form()],
+    current_user: Annotated[User, Depends(require_permission(PermissionCode.workshop_update))],
+):
+    workshop = await workshop_service.update(db, workshop_id, workshop_in, current_user)
+    response = HTMLResponse(content="")
+    response.headers["HX-Redirect"] = f"/workshops/{workshop.id}"
+    return response

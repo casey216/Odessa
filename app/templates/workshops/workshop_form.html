@@ -33,19 +33,19 @@
       <div class="form-group">
         <label class="form-label">Name *</label>
         <input type="text" name="name" class="form-input" placeholder="Enter workshop name"
-          value="{{ manufacturer.name if manufacturer else '' }}" required>
+          value="{{ workshop.name if workshop.name else '' }}" required>
       </div>
 
       <div class="form-group">
         <label class="form-label">Address</label>
         <input type="text" name="address" class="form-input" placeholder="Enter address"
-          value="{{ workshop.address if workshop else '' }}" maxlength="255">
+          value="{{ workshop.address if workshop.address else '' }}" maxlength="255">
       </div>
 
       <div class="form-group">
         <label class="form-label">Phone</label>
         <input type="tel" name="phone" class="form-input" placeholder="Enter phone number"
-          value="{{ workshop.phone if workshop else '' }}" maxlength="50">
+          value="{{ workshop.phone if workshop.phone else '' }}" maxlength="50">
       </div>
 
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
