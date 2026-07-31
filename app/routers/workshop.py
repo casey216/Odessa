@@ -175,7 +175,7 @@ async def activate_workshop(
     )
 
 
-@router.post("/workshop_id}/deactivate", response_class=HTMLResponse)
+@router.post("/{workshop_id}/deactivate", response_class=HTMLResponse)
 async def deactivate_workshop(
     request: Request,
     templates: TempDpnds,
