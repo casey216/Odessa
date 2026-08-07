@@ -34,6 +34,16 @@ class PermissionCode(StrEnum):
     workshop_update = "workshop:update"
     workshop_delete = "workshop:delete"
 
+    maintenance_work_order_create = "maintenance_work_order:create"
+    maintenance_work_order_read = "maintenance_work_order:read"
+    maintenance_work_order_update = "maintenance_work_order:update"
+    maintenance_work_order_delete = "maintenance_work_order:delete"
+    maintenance_work_order_schedule = "maintenance_work_order:schedule"
+    maintenance_work_order_start = "maintenance_work_order:start"
+    maintenance_work_order_complete = "maintenance_work_order:complete"
+    maintenance_work_order_close = "maintenance_work_order:close"
+    maintenance_work_order_cancel = "maintenance_work_order:cancel"
+
     activity_read = "activity:read"
 
     permission_grant = "permission:grant"
