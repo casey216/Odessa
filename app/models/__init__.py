@@ -1,4 +1,5 @@
 from .activity import ActivityLog
+from .maintenance_work_order import MaintenanceWorkOrder
 from .manufacturer import Manufacturer
 from .permission import Permission, UserPermission
 from .tag import Tag, vehicle_tags
@@ -21,4 +22,5 @@ __all__ = [
     "VehicleModel",
     "vehicle_tags",
     "Workshop",
+    "MaintenanceWorkOrder",
 ]
