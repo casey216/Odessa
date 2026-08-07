@@ -19,6 +19,8 @@ from .permission import (
 )
 from .validation import (
     DateFilterError,
+    ImmutableStateError,
+    InvalidStatusTransitionError,
     PasswordError,
 )
 
@@ -38,4 +40,6 @@ __all__ = [
     "InvalidPermissionError",
     "DateFilterError",
     "PasswordError",
+    "InvalidStatusTransitionError",
+    "ImmutableStateError",
 ]

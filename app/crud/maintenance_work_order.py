@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -60,7 +62,7 @@ class MaintenanceWorkOrderCrud(BaseCrud[MaintenanceWorkOrder]):
         self,
         db: AsyncSession,
         *,
-        id: str,
+        id: UUID,
         include_deleted: bool = False,
     ) -> MaintenanceWorkOrder | None:
         """Fetches a work order by ID, including related vehicle and workshop."""
@@ -83,7 +85,7 @@ class MaintenanceWorkOrderCrud(BaseCrud[MaintenanceWorkOrder]):
         self,
         db: AsyncSession,
         *,
-        vehicle_id: str,
+        vehicle_id: UUID,
         include_deleted: bool = False,
     ) -> list[MaintenanceWorkOrder]:
         """Fetches all work orders for a given vehicle ID."""
@@ -97,7 +99,7 @@ class MaintenanceWorkOrderCrud(BaseCrud[MaintenanceWorkOrder]):
         self,
         db: AsyncSession,
         *,
-        vehicle_id: str,
+        vehicle_id: UUID,
     ) -> list[MaintenanceWorkOrder]:
         """Fetches all active (not completed or closed) work orders for a given vehicle ID."""
         stmt = (
